@@ -469,7 +469,15 @@
 			  <button onclick="downloadPlayer()" style="padding: 15px 25px; background: #24292e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
 				<i class="fas fa-download"></i> Download Player (Untuk Dibuka via lokal/HP untuk cegah CORS dan CSP) </button>
 			</li>
+			
+		  <li>
+		  <button onclick="downloadFile('https://archive.org/download/playermini45/playermini50-fixed.html', 'playermini50.html', 'Player versi 50 (fixed network buffer) berhasil diunduh!')" 
+				  style="padding: 15px 25px; background: #24292e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+			<i class="fas fa-download"></i> Download Player versi 50 (fixed network buffering)
+		  </button>
+		  </li>	
           <li><a href="https://wlmyaps.github.io/pdf/equalizer.html">Private Web Audio Editor</a></li>
+		  
         </ul>
       </div>
     </div>
@@ -729,25 +737,37 @@
   </script>
   
   <script>
-function downloadPlayer() {
-    const fileUrl = 'https://raw.githubusercontent.com/wlmyaps/player/main/player.html';
-    const fileName = 'player.html';
-
-    // Memakai fetch agar beneran download file biner, bukan buka link
-    fetch(fileUrl)
-        .then(response => response.blob())
+// Fungsi umum untuk mendownload file apapun
+// Fungsi download dengan fallback jika fetch gagal (CORS)
+function downloadFile(url, filename, successMessage) {
+    fetch(url, { mode: 'cors' })
+        .then(response => {
+            if (!response.ok) throw new Error('Server error');
+            return response.blob();
+        })
         .then(blob => {
-            const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = fileName;
+            a.href = window.URL.createObjectURL(blob);
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
-            alert('Mantap Bestie! player.html sudah meluncur ke folder Download-mu.');
+            window.URL.revokeObjectURL(a.href);
+            if (successMessage) alert(successMessage);
         })
-        .catch(() => alert('Waduh, koneksi ke GitHub lagi ngadat nih!'));
+        .catch(() => {
+            // Fallback: buka langsung di tab baru agar user bisa menyimpan manual
+            alert('Tidak bisa mengunduh otomatis karena batasan CORS.\nMembuka file di tab baru...');
+            window.open(url, '_blank');
+        });
+}
+
+// Fungsi downloadPlayer tetap bisa pakai fetch karena GitHub mengizinkan CORS
+function downloadPlayer() {
+    downloadFile(
+        'https://raw.githubusercontent.com/wlmyaps/player/main/player.html',
+        'player.html',
+        'Mantap Bestie! player.html sudah meluncur ke folder Download-mu.'
+    );
 }
 </script>
 </body>
