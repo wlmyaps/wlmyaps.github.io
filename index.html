@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Central Hub - Vertical Edition</title>
+  <title>3D Central Hub - Lite Edition</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     :root {
       --bg-dark: #0f111a;
-      --card-bg: rgba(30, 34, 50, 0.7);
+      --card-bg: rgba(30, 34, 50, 0.75);
       --card-hover: rgba(40, 45, 70, 0.9);
       --text-main: #e2e8f0;
       --text-dim: #94a3b8;
@@ -30,14 +30,53 @@
       overflow-x: hidden;
     }
 
-    #particle-canvas {
+    /* ===== BACKGROUND MESH GRADIENT (CSS only, no canvas) ===== */
+    .mesh-bg {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -2;
+      background:
+        radial-gradient(at 20% 20%, rgba(76, 201, 240, 0.2) 0px, transparent 50%),
+        radial-gradient(at 80% 10%, rgba(181, 23, 158, 0.15) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(67, 97, 238, 0.15) 0px, transparent 50%),
+        radial-gradient(at 10% 90%, rgba(63, 55, 201, 0.2) 0px, transparent 50%);
+      background-size: 200% 200%;
+      animation: meshMove 20s ease infinite;
+    }
+    @keyframes meshMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== FLOATING ORBS (cuma 2, lebih ringan) ===== */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
       z-index: -1;
+      opacity: 0.3;
       pointer-events: none;
+    }
+    .orb-1 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(0,210,255,0.5) 0%, transparent 70%);
+      top: -80px; left: -80px;
+      animation: floatOrb1 25s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(181,23,158,0.4) 0%, transparent 70%);
+      bottom: -60px; right: -60px;
+      animation: floatOrb2 30s ease-in-out infinite;
+    }
+    @keyframes floatOrb1 {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(40px,30px); }
+    }
+    @keyframes floatOrb2 {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(-30px,-20px); }
     }
 
     .clock-wrapper {
@@ -69,24 +108,30 @@
       100% { transform: translate(-100%, 0); }
     }
 
+    /* ===== JAM 3D FLOATING (CSS only, no JS parallax) ===== */
     .digital-clock {
       font-size: 1.4rem;
       font-weight: 700;
       color: #ffffff;
-      text-shadow: 0 0 15px rgba(100, 200, 255, 0.7);
       margin-bottom: 10px;
       padding: 10px 20px;
       background: rgba(0, 0, 0, 0.35);
       border-radius: 40px;
       display: inline-block;
       border: 1px solid rgba(255,255,255,0.2);
+      text-shadow: 0 0 20px rgba(100, 200, 255, 0.8);
+      animation: breathe 4s ease-in-out infinite;
+      box-shadow: 0 15px 40px -5px rgba(0,0,0,0.6), 0 0 30px rgba(79,172,254,0.2);
     }
-
     .digital-clock .time {
       color: #4facfe;
     }
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
 
-    /* === SEARCH BOX (Revisi) === */
+    /* ===== SEARCH BOX ===== */
     .search-wrapper {
       width: 100%;
       max-width: 600px;
@@ -96,7 +141,7 @@
 
     .search-box {
       width: 100%;
-      padding: 14px 45px 14px 20px; /* ruang kanan buat tombol X */
+      padding: 14px 45px 14px 20px;
       border-radius: 50px;
       border: 1px solid rgba(255,255,255,0.15);
       background: rgba(0,0,0,0.4);
@@ -104,7 +149,6 @@
       font-size: 1rem;
       outline: none;
       transition: 0.3s;
-      backdrop-filter: blur(10px);
     }
 
     .search-box:focus {
@@ -129,7 +173,7 @@
       padding: 5px;
       line-height: 1;
       transition: color 0.2s;
-      display: none; /* muncul hanya saat ada teks */
+      display: none;
     }
 
     .clear-search:hover {
@@ -154,31 +198,36 @@
       perspective: 1000px;
     }
 
-    /* === ANIMASI CARD REVISI === */
+    /* ===== HUB CARD (Glassmorphism Lite untuk Win7) ===== */
     .hub-card {
       width: 100%;
       background: var(--card-bg);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 50px;
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, transform 0.3s ease;
+      transition: all 0.35s ease;
       position: relative;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      transform-style: preserve-3d;
-      pointer-events: auto;
+    }
+
+    /* TILT VIA CSS HOVER ONLY - No JS tracking! */
+    .hub-card:hover {
+      transform: translateY(-6px) scale(1.015) rotateX(2deg) rotateY(-1deg);
+      background: var(--card-hover);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(79, 172, 254, 0.2);
+      border-color: rgba(100, 200, 255, 0.35);
     }
 
     .hub-card.open {
-      border-color: #4facfe;
-      box-shadow: 0 0 25px rgba(79, 172, 254, 0.4);
+      border-color: rgba(79, 172, 254, 0.5);
+      box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
     }
 
-    /* Sembunyikan & animasi */
     .hub-card.hidden-by-search {
       opacity: 0;
       transform: scale(0.9) translateY(20px);
       pointer-events: none;
-      position: absolute; /* agar tidak memakan tempat */
+      position: absolute;
       z-index: -1;
       border-color: transparent;
       box-shadow: none;
@@ -240,14 +289,6 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-    }
-
-    .hub-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      background: var(--card-hover);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
-      border-color: rgba(255, 255, 255, 0.3);
-      border-radius: 25px 25px 40px 40px;
     }
 
     .hub-card.open .card-header::after {
@@ -319,7 +360,10 @@
 </head>
 <body>
 
-  <canvas id="particle-canvas"></canvas>
+<!-- Animated Mesh Gradient Background -->
+<div class="mesh-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
   <div class="clock-wrapper">
     <div class="digital-clock" id="liveClock">Memuat...</div>
@@ -347,35 +391,35 @@
       <div class="card-header"><span><i class="fas fa-folder"></i> Folder Awan</span></div>
       <div class="card-content">
         <ul class="link-list">
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/ayamvsbebek.html">ayamvsbebek.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank.html">bungabank.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank2.html">bungabank2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank3.html">bungabank3.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank4.html">bungabank4.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdf.html">compresspdf.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdfv2.html">compresspdfv2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdfv3.html">compresspdfv3.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/dnsanalis.html">dnsanalis.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari1.html">hari1.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari2.html">hari2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari3.html">hari3.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari4.html">hari4.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/index.html">index.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/newlist.html">newlist.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/nutrisi.html">nutrisi.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/nutrisi2.html">nutrisi2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/tidur.html">tidur.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetohd.html">imagetohd.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetohdv2.html">imagetohdv2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetopdf.html">imagetopdf.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/pdftoimage.html">pdftoimage.html</a></li>
-		  <li><a href="https://wlmyaps.github.io/tools/imagetopdf.html">IMAGE to PDF.html</a></li>
-		  <li><a href="https://wlmyaps.github.io/pdf/pdftotext.html">PDF to image.html</a></li>
-		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv1.html">PDF Gambar ke teks1</a></li>
-		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv2.html">PDF Gambar ke teks2</a></li>
-		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv3.html">PDF Gambar ke teks3</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/upscaler.html">upscaler.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/zidankalkulator.html">zidankalkulator.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/ayamvsbebek.html" target="_blank" rel="noopener noreferrer">ayamvsbebek.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank.html" target="_blank" rel="noopener noreferrer">bungabank.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank2.html" target="_blank" rel="noopener noreferrer">bungabank2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank3.html" target="_blank" rel="noopener noreferrer">bungabank3.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/bungabank4.html" target="_blank" rel="noopener noreferrer">bungabank4.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdf.html" target="_blank" rel="noopener noreferrer">compresspdf.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdfv2.html" target="_blank" rel="noopener noreferrer">compresspdfv2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/compresspdfv3.html" target="_blank" rel="noopener noreferrer">compresspdfv3.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/dnsanalis.html" target="_blank" rel="noopener noreferrer">dnsanalis.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari1.html" target="_blank" rel="noopener noreferrer">hari1.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari2.html" target="_blank" rel="noopener noreferrer">hari2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari3.html" target="_blank" rel="noopener noreferrer">hari3.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/hari4.html" target="_blank" rel="noopener noreferrer">hari4.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/index.html" target="_blank" rel="noopener noreferrer">index.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/newlist.html" target="_blank" rel="noopener noreferrer">newlist.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/nutrisi.html" target="_blank" rel="noopener noreferrer">nutrisi.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/nutrisi2.html" target="_blank" rel="noopener noreferrer">nutrisi2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/tidur.html" target="_blank" rel="noopener noreferrer">tidur.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetohd.html" target="_blank" rel="noopener noreferrer">imagetohd.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetohdv2.html" target="_blank" rel="noopener noreferrer">imagetohdv2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/imagetopdf.html" target="_blank" rel="noopener noreferrer">imagetopdf.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/pdftoimage.html" target="_blank" rel="noopener noreferrer">pdftoimage.html</a></li>
+		  <li><a href="https://wlmyaps.github.io/tools/imagetopdf.html" target="_blank" rel="noopener noreferrer">IMAGE to PDF.html</a></li>
+		  <li><a href="https://wlmyaps.github.io/pdf/pdftotext.html" target="_blank" rel="noopener noreferrer">PDF to image.html</a></li>
+		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv1.html" target="_blank" rel="noopener noreferrer">PDF Gambar ke teks1</a></li>
+		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv2.html" target="_blank" rel="noopener noreferrer">PDF Gambar ke teks2</a></li>
+		  <li><a href="https://wlmyaps.github.io/pdf/ocrpdfv3.html" target="_blank" rel="noopener noreferrer">PDF Gambar ke teks3</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/upscaler.html" target="_blank" rel="noopener noreferrer">upscaler.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/awan/zidankalkulator.html" target="_blank" rel="noopener noreferrer">zidankalkulator.html</a></li>
         </ul>
       </div>
     </div>
@@ -385,15 +429,17 @@
       <div class="card-header"><span><i class="fas fa-book"></i> WLM HTML</span></div>
       <div class="card-content">
         <ul class="link-list">
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/calculator.html">calculator.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/filterlist.html">filterlist.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/kalku.html">kalku.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/kalkulator.html">kalkulator.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences.html">sciences.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences2.html">sciences2.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences3.html">sciences3.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences4..html">sciences4.html</a></li>
-          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences5.htm">sciences5.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/calculator.html" target="_blank" rel="noopener noreferrer">calculator.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/filterlist.html" target="_blank" rel="noopener noreferrer">filterlist.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/kalku.html" target="_blank" rel="noopener noreferrer">kalku.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/kalkulator.html" target="_blank" rel="noopener noreferrer">kalkulator.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences.html" target="_blank" rel="noopener noreferrer">sciences.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences2.html" target="_blank" rel="noopener noreferrer">sciences2.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences3.html" target="_blank" rel="noopener noreferrer">sciences3.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences4..html" target="_blank" rel="noopener noreferrer">sciences4.html</a></li>
+          <li><a href="https://williamyaps.github.io/wlmjavascript/html/sciences5.htm" target="_blank" rel="noopener noreferrer">sciences5.html</a></li>
+		  <li><a href="https://williamyaps.github.io/xioaming/html/scorpio.html" target="_blank" rel="noopener noreferrer">Analis horoskop scorpio</a></li>
+		  <li><a href="https://williamyaps.github.io/xioaming/html/obatfatku.html" target="_blank" rel="noopener noreferrer">Obat Fatku</a></li>
         </ul>
       </div>
     </div>
@@ -403,23 +449,23 @@
       <div class="card-header"><span><i class="fas fa-globe"></i> Sites Hub</span></div>
       <div class="card-content">
         <ul class="link-list">
-          <li><a href="https://williamyaps.github.io/xioaming/sites/anjingvsharimau.html">anjingvsharimau.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/dnslevel.html">dnslevel.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/dnslevelv2.html">dnslevelv2.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/face.html">face.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/face2.html">face2.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/face3.html">face3.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/face_refine_cpu.html">face_refine_cpu.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/gpthpcompare.html">gpthpcompare.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/hpcompare.html">hpcompare.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/hpcomparison.html">hpcomparison.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/kompor.html">kompor.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/medansur.html">Medan Singapore.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/ringkasancurl.html">ringkasancurl.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/sinsur.html">Singapore Surabaya.html</a></li>
-		  <li><a href="https://williamyaps.github.io/xioaming/sites/sinsur2.html">Singapore Surabaya2.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/tekniscurl.html">tekniscurl.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/sites/thankscopilot.html">thankscopilot.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/anjingvsharimau.html" target="_blank" rel="noopener noreferrer">anjingvsharimau.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/dnslevel.html" target="_blank" rel="noopener noreferrer">dnslevel.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/dnslevelv2.html" target="_blank" rel="noopener noreferrer">dnslevelv2.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/face.html" target="_blank" rel="noopener noreferrer">face.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/face2.html" target="_blank" rel="noopener noreferrer">face2.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/face3.html" target="_blank" rel="noopener noreferrer">face3.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/face_refine_cpu.html" target="_blank" rel="noopener noreferrer">face_refine_cpu.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/gpthpcompare.html" target="_blank" rel="noopener noreferrer">gpthpcompare.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/hpcompare.html" target="_blank" rel="noopener noreferrer">hpcompare.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/hpcomparison.html" target="_blank" rel="noopener noreferrer">hpcomparison.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/kompor.html" target="_blank" rel="noopener noreferrer">kompor.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/medansur.html" target="_blank" rel="noopener noreferrer">Medan Singapore.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/ringkasancurl.html" target="_blank" rel="noopener noreferrer">ringkasancurl.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/sinsur.html" target="_blank" rel="noopener noreferrer">Singapore Surabaya.html</a></li>
+		  <li><a href="https://williamyaps.github.io/xioaming/sites/sinsur2.html" target="_blank" rel="noopener noreferrer">Singapore Surabaya2.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/tekniscurl.html" target="_blank" rel="noopener noreferrer">tekniscurl.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/sites/thankscopilot.html" target="_blank" rel="noopener noreferrer">thankscopilot.html</a></li>
         </ul>
       </div>
     </div>
@@ -429,21 +475,21 @@
       <div class="card-header"><span><i class="fas fa-chart-bar"></i> Analysis</span></div>
       <div class="card-content">
         <ul class="link-list">
-          <li><a href="https://williamyaps.github.io/xioaming/html/analis19771994.html">analis19771994.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/analis19941999.html">analis19941999.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/analis199419992024.html">analis199419992024.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/antinyeri.html">antinyeri.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/emas101004.html">emas101004.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/gout.html">gout.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/gouttextasli.html">gouttextasli.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/kurscompare11Mar10April.html">kurscompare.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/mitokondria.html">mitokondria.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/mitokrondria-story.html">mitokondria story.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/mitrokondria-adv.html">mitokondria advance.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/nongout.html">nongout.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/scorpio.html">scorpio.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/visualscorpio.html">visualscorpio.html</a></li>
-          <li><a href="https://williamyaps.github.io/xioaming/html/tcm.html">tcm.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/analis19771994.html" target="_blank" rel="noopener noreferrer">analis19771994.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/analis19941999.html" target="_blank" rel="noopener noreferrer">analis19941999.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/analis199419992024.html" target="_blank" rel="noopener noreferrer">analis199419992024.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/antinyeri.html" target="_blank" rel="noopener noreferrer">antinyeri.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/emas101004.html" target="_blank" rel="noopener noreferrer">emas101004.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/gout.html" target="_blank" rel="noopener noreferrer">gout.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/gouttextasli.html" target="_blank" rel="noopener noreferrer">gouttextasli.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/kurscompare11Mar10April.html" target="_blank" rel="noopener noreferrer">kurscompare.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/mitokondria.html" target="_blank" rel="noopener noreferrer">mitokondria.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/mitokrondria-story.html" target="_blank" rel="noopener noreferrer">mitokondria story.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/mitrokondria-adv.html" target="_blank" rel="noopener noreferrer">mitokondria advance.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/nongout.html" target="_blank" rel="noopener noreferrer">nongout.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/scorpio.html" target="_blank" rel="noopener noreferrer">scorpio.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/visualscorpio.html" target="_blank" rel="noopener noreferrer">visualscorpio.html</a></li>
+          <li><a href="https://williamyaps.github.io/xioaming/html/tcm.html" target="_blank" rel="noopener noreferrer">tcm.html</a></li>
         </ul>
       </div>
     </div>
@@ -453,18 +499,18 @@
       <div class="card-header"><span><i class="fas fa-tools"></i> Tools</span></div>
       <div class="card-content">
         <ul class="link-list">
-          <a href="https://wlmyaps.github.io/kurs/" target="_blank" class="nav-link"><i class="fas fa-table"></i> Tabel Kurs Terkini</a>
-          <a href="https://wlmyaps.github.io/kurs/graph.html" target="_blank" class="nav-link"><i class="fas fa-chart-area"></i> Grafik Pergerakan Kurs</a>
-          <a href="https://wlmyaps.github.io/kurs/buatgrafikcompare.html" target="_blank" class="nav-link"><i class="fas fa-upload"></i> Upload CSV untuk buat grafik</a>
-          <a href="https://wlmyaps.github.io/kurs/buatgrafikcompare.html" target="_blank" class="nav-link"><i class="fas fa-chart-line"></i> Analis Kurs (Upload CSV)</a>
-          <a href="https://wlmyaps.github.io/kurs/grafikcoompare.html" target="_blank" class="nav-link"><i class="fas fa-exchange-alt"></i> Compare Kurs (Upload CSV)</a>
-          <a href="https://wlmyaps.github.io/kurs/menu2.html" target="_blank" class="nav-link"><i class="fas fa-radio"></i> Menu Kurs tanpa Radio</a>
-          <li><a href="https://wlmyaps.github.io/adblock/">Test Adblock</a></li>
-          <li><a href="https://wlmyaps.github.io/proxy/">Free web proxy</a></li>
-          <li><a href="https://williamyaps.github.io/tv/">Free television</a></li>
-		  <li><a href="https://williamyaps.github.io/piano/pianowlm.html">Free piano</a></li>
-		  <li><a href="https://williamyaps.github.io/wlmjavascript/awan/quota.html">Free Kalkulator menghitung quota</a></li>		  
-		  <li><a href="https://wlmyaps.github.io/player/">Super Media Player</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/" target="_blank" rel="noopener noreferrer"><i class="fas fa-table"></i> Tabel Kurs Terkini</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/graph.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-chart-area"></i> Grafik Pergerakan Kurs</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/buatgrafikcompare.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-upload"></i> Upload CSV untuk buat grafik</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/buatgrafikcompare.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-chart-line"></i> Analis Kurs (Upload CSV)</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/grafikcoompare.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-exchange-alt"></i> Compare Kurs (Upload CSV)</a></li>
+          <li><a href="https://wlmyaps.github.io/kurs/menu2.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-radio"></i> Menu Kurs tanpa Radio</a></li>
+          <li><a href="https://wlmyaps.github.io/adblock/" target="_blank" rel="noopener noreferrer">Test Adblock</a></li>
+          <li><a href="https://wlmyaps.github.io/proxy/" target="_blank" rel="noopener noreferrer">Free web proxy</a></li>
+          <li><a href="https://williamyaps.github.io/tv/" target="_blank" rel="noopener noreferrer">Free television</a></li>
+		  <li><a href="https://williamyaps.github.io/piano/pianowlm.html" target="_blank" rel="noopener noreferrer">Free piano</a></li>
+		  <li><a href="https://williamyaps.github.io/wlmjavascript/awan/quota.html" target="_blank" rel="noopener noreferrer">Free Kalkulator menghitung quota</a></li>		  
+		  <li><a href="https://wlmyaps.github.io/player/" target="_blank" rel="noopener noreferrer">Super Media Player</a></li>
 		  <li>
 			  <button onclick="downloadPlayer()" style="padding: 15px 25px; background: #24292e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
 				<i class="fas fa-download"></i> Download Player (Untuk Dibuka via lokal/HP untuk cegah CORS dan CSP) </button>
@@ -476,10 +522,10 @@
 			<i class="fas fa-download"></i> Download Player versi 50 (fixed network buffering)
 		  </button>
 		  </li>	
-          <li><a href="https://wlmyaps.github.io/pdf/equalizer.html">Private Web Audio Editor</a></li>
-			<a href="https://wlmyaps.github.io/kurs/panduan_portofolio_edyanto.html" target="_blank" class="nav-link"><i class="fas fa-book-open-reader"></i> Panduan Portfolio Kalkulator</a>
-			<a href="https://wlmyaps.github.io/kurs/portofolio.html" target="_blank" class="nav-link"><i class="fas fa-balance-scale"></i> Portfolio Analyzer</a>
-			<a href="https://wlmyaps.github.io/kurs/portofolio2.html" target="_blank" class="nav-link"><i class="fas fa-calculator"></i> Portfolio Analyzer  versi 2</a>		  
+          <li><a href="https://wlmyaps.github.io/pdf/equalizer.html" target="_blank" rel="noopener noreferrer">Private Web Audio Editor</a></li>
+			<li><a href="https://wlmyaps.github.io/kurs/panduan_portofolio_edyanto.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open-reader"></i> Panduan Portfolio Kalkulator</a></li>
+			<li><a href="https://wlmyaps.github.io/kurs/portofolio.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-balance-scale"></i> Portfolio Analyzer</a></li>
+			<li><a href="https://wlmyaps.github.io/kurs/portofolio2.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-calculator"></i> Portfolio Analyzer  versi 2</a></li>		  
         </ul>
       </div>
     </div>
@@ -489,10 +535,10 @@
       <div class="card-header"><span><i class="fas fa-bookmark"></i> My Bookmarks</span></div>
       <div class="card-content">
         <ul class="link-list">
-		  <li><a href="https://williamyaps.blogspot.com/p/sitemap.html">Peta blog saya</a></li>
-		  <li><a href="https://wlmyaps.github.io/kurs/fas.html">Fonts awesome icon display</a></li>
-		  <li><a href="https://wlmyaps.github.io/kurs/fas.html">Fonts awesome icon display2</a></li>
-          <li><a href="https://fontawesome.com/v6/search">Fonts awesome</a></li>          
+		  <li><a href="https://williamyaps.blogspot.com/p/sitemap.html" target="_blank" rel="noopener noreferrer">Peta blog saya</a></li>
+		  <li><a href="https://wlmyaps.github.io/kurs/fas.html" target="_blank" rel="noopener noreferrer">Fonts awesome icon display</a></li>
+		  <li><a href="https://wlmyaps.github.io/kurs/fas.html" target="_blank" rel="noopener noreferrer">Fonts awesome icon display2</a></li>
+          <li><a href="https://fontawesome.com/v6/search" target="_blank" rel="noopener noreferrer">Fonts awesome</a></li>          
         </ul>
       </div>
     </div>
@@ -500,67 +546,6 @@
   </div>
 
   <script>
-    /* ===== STARFIELD ===== */
-    const canvas = document.getElementById('particle-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let stars = [];
-    const STAR_COUNT = 120;
-    const colors = [
-      'rgba(0,210,255,',
-      'rgba(180,77,255,',
-      'rgba(255,255,255,',
-      'rgba(241,196,15,',
-      'rgba(46,204,113,',
-    ];
-
-    function resizeCanvas() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    }
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      stars = [];
-      for (let i = 0; i < STAR_COUNT; i++) stars.push(createStar());
-    });
-
-    function createStar() {
-      return {
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: Math.random() * 2.5 + 0.5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        speed: Math.random() * 0.3 + 0.05,
-        phase: Math.random() * Math.PI * 2,
-        twinkle: Math.random() * 0.02 + 0.005
-      };
-    }
-
-    function drawStars() {
-      ctx.clearRect(0, 0, width, height);
-      for (let s of stars) {
-        const alpha = 0.3 + 0.4 * Math.sin(Date.now() * s.twinkle + s.phase);
-        ctx.fillStyle = s.color + alpha + ')';
-        ctx.shadowColor = s.color + '0.8)';
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-        ctx.fill();
-        s.y -= s.speed;
-        if (s.y < -10) {
-          s.y = height + 10;
-          s.x = Math.random() * width;
-        }
-      }
-      requestAnimationFrame(drawStars);
-    }
-
-    resizeCanvas();
-    for (let i = 0; i < STAR_COUNT; i++) stars.push(createStar());
-    drawStars();
-
     /* ===== TOGGLE: DOUBLE-CLICK DI DESKTOP, SINGLE-CLICK DI HP ===== */
     const cardHeaders = document.querySelectorAll('.hub-card .card-header');
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -604,10 +589,10 @@
 
     /* ===== FUNGSI HELPER ESCAPE REGEXP ===== */
     function escapeRegExp(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& artinya seluruh string yang cocok
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    /* ===== SEARCH FUNCTIONALITY (REVISI) ===== */
+    /* ===== SEARCH FUNCTIONALITY ===== */
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearSearchBtn');
     const notFoundMsg = document.getElementById('notFoundMsg');
@@ -624,11 +609,9 @@
         let cardMatch = headerText.includes(term);
         let anyLinkMatch = false;
 
-        // Reset highlight & hidden dulu
         links.forEach(li => {
           const a = li.querySelector('a');
           if (!a) return;
-          // Kembalikan innerHTML tanpa mark
           const originalHtml = a.getAttribute('data-original-html') || a.innerHTML;
           if (!a.getAttribute('data-original-html')) {
             a.setAttribute('data-original-html', originalHtml);
@@ -646,7 +629,6 @@
 
           if (match) {
             li.classList.remove('hidden-link');
-            // Highlight
             const escaped = escapeRegExp(term);
             a.innerHTML = originalHtml.replace(
               new RegExp(escaped, 'gi'),
@@ -663,26 +645,23 @@
         if (cardMatch && term !== '') {
           card.classList.remove('hidden-by-search');
           if (!card.classList.contains('open')) {
-            card.classList.add('open'); // Auto-open
+            card.classList.add('open');
           }
           anyVisible = true;
         } else if (term === '') {
           card.classList.remove('hidden-by-search');
-          // Tidak perlu tutup card di sini
         } else {
           card.classList.add('hidden-by-search');
           card.classList.remove('open');
         }
       });
 
-      // Tampilkan/sembunyikan pesan tidak ditemukan
       if (term !== '' && !anyVisible) {
         notFoundMsg.style.display = 'block';
       } else {
         notFoundMsg.style.display = 'none';
       }
 
-      // Tampilkan/sembunyikan tombol clear
       clearBtn.style.display = term !== '' ? 'block' : 'none';
     }
 
@@ -696,7 +675,6 @@
       searchInput.focus();
     });
 
-    // Inisialisasi: sembunyikan tombol clear
     clearBtn.style.display = 'none';
 
     /* ===== DIGITAL CLOCK ===== */
@@ -739,7 +717,6 @@
   </script>
   
   <script>
-// Fungsi umum untuk mendownload file apapun
 // Fungsi download dengan fallback jika fetch gagal (CORS)
 function downloadFile(url, filename, successMessage) {
     fetch(url, { mode: 'cors' })
@@ -757,13 +734,11 @@ function downloadFile(url, filename, successMessage) {
             if (successMessage) alert(successMessage);
         })
         .catch(() => {
-            // Fallback: buka langsung di tab baru agar user bisa menyimpan manual
             alert('Tidak bisa mengunduh otomatis karena batasan CORS.\nMembuka file di tab baru...');
             window.open(url, '_blank');
         });
 }
 
-// Fungsi downloadPlayer tetap bisa pakai fetch karena GitHub mengizinkan CORS
 function downloadPlayer() {
     downloadFile(
         'https://raw.githubusercontent.com/wlmyaps/player/main/player.html',
@@ -772,5 +747,6 @@ function downloadPlayer() {
     );
 }
 </script>
+
 </body>
 </html>
