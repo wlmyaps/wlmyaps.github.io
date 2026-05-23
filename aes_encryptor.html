@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>AES Encryptor for HTML - Anti AI Read</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1e2b38;
+        }
+        .note {
+            background: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>?? AES HTML Encryptor</h1>
+    <p>Enkripsi file HTML dengan AES sehingga <strong>AI (seperti Gemini, ChatGPT, DeepSeek) tidak bisa membaca konten asli</strong> tanpa password yang benar.</p>
+    <div class="note">
+        ?? <strong>Cara kerja:</strong> Upload file HTML, masukkan password, maka akan dihasilkan file HTML baru yang terenkripsi. Saat file hasil dibuka, akan meminta password untuk mendekripsi dan menampilkan konten asli.
+    </div>
+</div>
+
+<div class="card">
+    <h2>1. Pilih file HTML yang akan dienkripsi</h2>
+    <input type="file" id="fileInput" accept=".html,.htm">
+    
+    <label>?? Password untuk enkripsi (wajib diingat):</label>
+    <input type="password" id="password" placeholder="Masukkan password...">
+    
+    <label>?? Konfirmasi Password:</label>
+    <input type="password" id="confirmPassword" placeholder="Ketik ulang password">
+    
+    <div class="warning" id="warningMsg" style="display:none;"></div>
+    
+    <button id="encryptBtn">?? Enkripsi & Download</button>
+    <button id="clearBtn">Clear</button>
+</div>
+
+<div class="card" id="previewCard" style="display:none;">
+    <h2>2. Hasil enkripsi (pratinjau kode HTML output)</h2>
+    <pre id="outputPreview"></pre>
+    <p>File hasil sudah siap didownload. Simpan dan buka di browser. Halaman akan meminta password untuk menampilkan konten asli.</p>
+</div>
+
+<footer>
+    Tool ini berjalan 100% di browser Anda, tidak ada data yang dikirim ke server. Gunakan untuk melindungi konten dari pembacaan AI.
+</footer>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const encryptBtn = document.getElementById('encryptBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const warningMsg = document.getElementById('warningMsg');
+    const previewCard = document.getElementById('previewCard');
+    const outputPreview = document.getElementById('outputPreview');
+
+    let uploadedContent = null;
+
+    // Fungsi membuat template HTML yang akan didekripsi saat load
+    function buildEncryptedTemplate(encryptedData, passwordHint = '') {
+        // escaped untuk aman dimasukkan ke dalam string JS
+        const escapedEncrypted = encryptedData.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        // Gunakan fungsi prompt untuk meminta password
+        return `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dokumen Terenkripsi - Password Required</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"><\/script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #1e1e2f;
+            color: #fff;
+        }
+        .container {
+            background: #2d2d44;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #3b5bdb;
+        }
+        .error {
+            color: #ff8787;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>?? Dokumen Terenkripsi</h2>
+    <p>Konten dilindungi dengan AES. Masukkan password untuk membuka.</p>
+    <input type="password" id="password" placeholder="Password" autofocus>
+    <br>
+    <button id="decryptBtn">Buka Dokumen</button>
+    <div id="errorMsg" class="error"></div>
+</div>
+<script>
+    const encrypted = \`${escapedEncrypted}\`;
+    const decryptBtn = document.getElementById('decryptBtn');
+    const passwordField = document.getElementById('password');
+    const errorDiv = document.getElementById('errorMsg');
+    
+    function decryptAndShow() {
+        const pwd = passwordField.value;
+        if (!pwd) {
+            errorDiv.innerText = 'Password tidak boleh kosong!';
+            return;
+        }
+        try {
+            const decrypted = CryptoJS.AES.decrypt(encrypted, pwd).toString(CryptoJS.enc.Utf8);
+            if (!decrypted) {
+                throw new Error('Password salah atau data rusak.');
+            }
+            // Ganti seluruh isi document dengan konten asli
+            document.open();
+            document.write(decrypted);
+            document.close();
+        } catch(e) {
+            errorDiv.innerText = 'Gagal mendekripsi. Password salah?';
+        }
+    }
+    decryptBtn.addEventListener('click', decryptAndShow);
+    passwordField.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') decryptAndShow();
+    });
+<\/script>
+</body>
+</html>`;
+    }
+
+    // Fungsi enkripsi
+    async function encryptAndDownload() {
+        // Reset warning
+        warningMsg.style.display = 'none';
+        warningMsg.innerText = '';
+        
+        // Validasi file
+        if (!uploadedContent) {
+            warningMsg.innerText = '? Pilih file HTML terlebih dahulu!';
+            warningMsg.style.display = 'block';
+            return;
+        }
+        
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+        if (!password) {
+            warningMsg.innerText = '? Password harus diisi!';
+            warningMsg.style.display = 'block';
+            return;
+        }
+        if (password !== confirm) {
+            warningMsg.innerText = '? Password dan konfirmasi tidak cocok!';
+            warningMsg.style.display = 'block';
+            return;
+        }
+        
+        // Enkripsi konten menggunakan AES
+        try {
+            const encrypted = CryptoJS.AES.encrypt(uploadedContent, password).toString();
+            
+            // Buat template HTML final
+            const finalHtml = buildEncryptedTemplate(encrypted);
+            
+            // Tampilkan pratinjau
+            outputPreview.textContent = finalHtml.substring(0, 1500) + (finalHtml.length > 1500 ? '... (terpotong)' : '');
+            previewCard.style.display = 'block';
+            
+            // Download file
+            const blob = new Blob([finalHtml], { type: 'text/html' });
+            const link = document.createElement('a');
+            const originalName = fileInput.files[0] ? fileInput.files[0].name : 'encrypted.html';
+            const baseName = originalName.replace(/\.html?$/i, '');
+            link.download = `${baseName}_encrypted.html`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+            
+            // Bersihkan sedikit
+            setTimeout(() => {
+                previewCard.scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+        } catch (err) {
+            warningMsg.innerText = '? Gagal enkripsi: ' + err.message;
+            warningMsg.style.display = 'block';
+        }
+    }
+
+    // Baca file saat dipilih
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            uploadedContent = evt.target.result;
+            warningMsg.style.display = 'none';
+            // Optional: beri notifikasi sukses baca
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.innerText = `? File "${file.name}" berhasil dibaca (${uploadedContent.length} karakter). Siap dienkripsi.`;
+            const existing = document.querySelector('.upload-ok');
+            if (existing) existing.remove();
+            note.classList.add('upload-ok');
+            fileInput.parentNode.insertBefore(note, fileInput.nextSibling);
+            setTimeout(() => note.remove(), 3000);
+        };
+        reader.onerror = function() {
+            warningMsg.innerText = '? Gagal membaca file.';
+            warningMsg.style.display = 'block';
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+    
+    encryptBtn.addEventListener('click', encryptAndDownload);
+    
+    clearBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        passwordInput.value = '';
+        confirmInput.value = '';
+        uploadedContent = null;
+        warningMsg.style.display = 'none';
+        previewCard.style.display = 'none';
+        outputPreview.textContent = '';
+        // hapus pesan sukses baca
+        const okDiv = document.querySelector('.upload-ok');
+        if (okDiv) okDiv.remove();
+    });
+</script>
+</body>
+</html>
