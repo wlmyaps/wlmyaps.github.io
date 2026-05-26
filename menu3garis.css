@@ -1,8 +1,8 @@
 /* ============================================
    MENU 3 GARIS - WINDOWS 7 STYLE START MENU
+   Tampil di tengah layak modal
    ============================================ */
 
-/* Reset untuk container */
 .wlm-menu-container {
   position: fixed;
   bottom: 20px;
@@ -11,7 +11,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Tombol Hamburger / Start */
+/* Tombol Hamburger */
 #wlmMenuToggle {
   width: 50px;
   height: 50px;
@@ -28,19 +28,19 @@
   transition: all 0.2s ease;
   user-select: none;
 }
-
 #wlmMenuToggle:hover {
   background: linear-gradient(180deg, #3a3a3a 0%, #2d2d2d 100%);
   box-shadow: 0 6px 20px rgba(0,120,215,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
-/* Panel Menu */
+/* Panel Menu - TENGAH */
 #wlmMenuPanel {
   display: none;
-  position: absolute;
-  bottom: 70px;
-  right: 0;
-  width: 420px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
   max-width: 90vw;
   max-height: 70vh;
   background: linear-gradient(180deg, #2b2b2b 0%, #1f1f1f 100%);
@@ -50,26 +50,19 @@
   padding: 15px;
   overflow-y: auto;
   backdrop-filter: blur(10px);
-  transform-origin: bottom right;
-  animation: wlmMenuPop 0.2s ease-out;
+  z-index: 100000;
+  animation: wlmMenuPop 0.25s ease-out;
 }
 
 @keyframes wlmMenuPop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-/* Scrollbar styling */
-#wlmMenuPanel::-webkit-scrollbar {
-  width: 6px;
-}
-#wlmMenuPanel::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-#wlmMenuPanel::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 3px;
-}
+/* Scrollbar */
+#wlmMenuPanel::-webkit-scrollbar { width: 6px; }
+#wlmMenuPanel::-webkit-scrollbar-track { background: #1a1a1a; }
+#wlmMenuPanel::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
 /* Card kategori */
 .hub-card {
@@ -97,36 +90,29 @@
   user-select: none;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-
-.card-header i {
-  width: 20px;
-  text-align: center;
-}
+.card-header i { width: 20px; text-align: center; }
 
 .card-content {
   display: none;
   padding: 8px 12px;
   background: rgba(0,0,0,0.3);
 }
+.card-content.open { display: block; }
 
-.card-content.open {
-  display: block;
-}
-
+/* Link list */
 .link-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-
-.link-list li {
-  margin: 4px 0;
-}
+.link-list li { margin: 4px 0; }
 
 .link-list a,
 .link-list button {
-  display: block;
-  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
   color: #ccc;
   text-decoration: none;
   font-size: 13px;
@@ -138,22 +124,34 @@
   text-align: left;
   cursor: pointer;
 }
-
+.link-list a i,
+.link-list button i {
+  font-size: 12px;
+  opacity: 0.8;
+  min-width: 16px;
+}
 .link-list a:hover,
 .link-list button:hover {
   background: #0078d7;
   color: #fff;
 }
 
-.link-list button i {
-  margin-right: 6px;
+/* Sub menu (nested card) */
+.hub-card .hub-card {
+  margin: 6px 0 6px 16px;
+  border-left: 2px solid #0078d7;
+  background: rgba(255,255,255,0.03);
+}
+.hub-card .hub-card .card-header {
+  font-size: 12px;
+  padding: 7px 10px;
+  background: rgba(0,120,215,0.15);
+}
+.hub-card .hub-card .card-content {
+  padding: 5px 10px;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  #wlmMenuPanel {
-    width: 95vw;
-    right: -10px;
-    bottom: 65px;
-  }
+  #wlmMenuPanel { width: 95vw; }
 }
