@@ -1,265 +1,170 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ ULTIMATE VAULT v4.2 — TEMPLATE SAFE</title>
-    <!-- Decoy template tersembunyi, tidak akan menyebabkan error -->
-    <script type="text/html" id="decoy-template">
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>The Illusion of Success</title>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-            <style>
-                :root{--bg:#0a0f14;--neon:#00ff88}body{margin:0;background:var(--bg);height:100vh;overflow:hidden;font-family:system-ui;display:flex;align-items:center;justify-content:center}.container{text-align:center;z-index:10}h1{color:var(--neon);font-size:3rem;animation:pulse 2s infinite}.sub{color:#8a95a5;margin-top:10px;font-size:1.3rem}.icon-chaos{position:absolute;font-size:2rem;animation:float 4s infinite alternate,colorShift 3s infinite;pointer-events:none}@keyframes pulse{0%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}100%{opacity:.8;transform:scale(1)}}@keyframes float{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50px,-30px) rotate(15deg)}}@keyframes colorShift{0%{color:#ff4466}25%{color:#ffaa00}50%{color:#00ff88}75%{color:#00aaff}100%{color:#ff44ff}}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>✨ THE ILLUSION OF SUCCESS ✨</h1>
-                <div class="sub">Akses ditolak · Decoy aktif</div>
-            </div>
-            <script>
-                var icons=["fa-ghost","fa-skull","fa-bomb","fa-fire","fa-bolt","fa-meteor","fa-dragon","fa-crow","fa-spider","fa-hippo","fa-otter","fa-fish","fa-cat","fa-dog","fa-kiwi-bird","fa-feather","fa-cannabis","fa-jedi","fa-yin-yang","fa-atom","fa-dharmachakra","fa-pastafarianism","fa-peace","fa-rocket","fa-robot","fa-alien","fa-space-shuttle","fa-satellite","fa-moon","fa-sun"];
-                for(var i=0;i<45;i++){
-                    var el=document.createElement("i");
-                    el.className="fa-solid "+icons[Math.floor(Math.random()*icons.length)]+" icon-chaos";
-                    el.style.left=Math.random()*90+"%";
-                    el.style.top=Math.random()*85+"%";
-                    el.style.animationDelay=Math.random()*3+"s";
-                    el.style.animationDuration=(Math.random()*5+3)+"s";
-                    el.style.fontSize=(Math.random()*4+1.5)+"rem";
-                    document.body.appendChild(el);
-                }
-            </script>
-        </body>
-        </html>
-    </script>
-
-    <style>
-        :root {
-            --bg: #0a0f14; --panel: #111922; --neon: #00ff88;
-            --text: #c0c8d0; --border: #1f2a33; --input-bg: #1a232e; --error: #ff4466;
-        }
-        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
-        body { background: var(--bg); margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 32px 28px; max-width: 520px; width: 100%; box-shadow: 0 0 30px rgba(0,255,136,0.08); }
-        h1 { color: var(--neon); font-size: 24px; margin: 0 0 6px; }
-        .subtitle { color: #8a95a5; font-size: 13px; margin-bottom: 24px; }
-        label { color: var(--text); font-weight: 600; font-size: 13px; display: block; margin: 16px 0 6px; text-transform: uppercase; }
-        input[type="file"], input[type="password"] { width: 100%; padding: 12px 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: #fff; font-size: 15px; }
-        button { background: var(--neon); color: #0a0f14; border: none; padding: 14px 20px; border-radius: 14px; font-weight: 700; width: 100%; margin-top: 28px; cursor: pointer; }
-        button:disabled { opacity: 0.45; cursor: not-allowed; }
-        .log { margin-top: 20px; padding: 14px; border-radius: 12px; font-size: 13px; display: none; }
-        .log.info { background: #1a2e2a; border-left: 4px solid var(--neon); color: #b0f0d0; }
-        .log.error { background: #2e1a1f; border-left: 4px solid var(--error); color: #ffb0bf; }
-        .log.success { background: #132a1c; border-left: 4px solid #2ea043; color: #a0e0b0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enkripsi Ketat v2 – Argon2id + AES-GCM</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.3/dist/argon2-bundled.min.js"></script>
+<style>
+:root{--bg:#0f172a;--neon:#10b981;--neon2:#059669;--glass:rgba(17,24,39,.72)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#e2e8f0;font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(800px 400px at 20% 10%,rgba(16,185,129,.12),transparent),radial-gradient(600px 300px at 80% 90%,rgba(16,185,129,.08),transparent)}
+.card{width:100%;max-width:520px;background:var(--glass);backdrop-filter:blur(18px);border:1px solid rgba(16,185,129,.25);border-radius:24px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+h1{margin:0 0 6px;font-size:26px;display:flex;align-items:center;gap:10px}
+.badge{font-size:11px;padding:3px 8px;border:1px solid var(--neon);color:var(--neon);border-radius:999px;letter-spacing:.5px}
+.sub{color:#94a3b8;font-size:13px;margin-bottom:22px}
+label{display:block;margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:#cbd5e1;font-weight:600}
+input{width:100%;padding:13px 14px;background:#0b1220;border:1px solid #233046;border-radius:12px;color:#e2e8f0;font-size:15px;outline:none}
+input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(16,185,129,.18)}
+input[type=file]{padding:10px}
+.btn{margin-top:22px;width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#06291e;font-weight:800;font-size:15px;cursor:pointer}
+.btn:disabled{opacity:.6}
+.warn{font-size:12px;color:#f59e0b;margin-top:6px;display:none}
+.warn.err{color:#f87171}
+.status{margin-top:14px;font-size:13px;color:#a7f3d0;display:none}
+.result{margin-top:18px;padding:14px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.07);border-radius:12px;display:none}
+a.dl{color:var(--neon);font-weight:700;text-decoration:none}
+</style>
 </head>
 <body>
 <div class="card">
-    <h1>🔐 VAULT v4.2</h1>
-    <div class="subtitle">PARANOID SOVEREIGN · Template Safe · Anti Error</div>
-    <label>📁 Pilih File HTML</label>
-    <input type="file" id="fileInput" accept=".html,.htm">
-    <label>🔑 Password</label>
-    <input type="password" id="password" placeholder="Boleh 1 emoji 🥳">
-    <label>🔁 Konfirmasi Password</label>
-    <input type="password" id="confirmPass" placeholder="Ulangi password">
-    <button id="encryptBtn" disabled>🔒 Enkripsi & Download</button>
-    <div id="logArea" class="log"></div>
+  <h1><i class="fa-solid fa-shield-halved" style="color:var(--neon)"></i> HTML ENCRYPTOR <span class="badge">PARANOID</span></h1>
+  <div class="sub">PBKDF2 100k + Argon2id 64MB + AES-GCM. Magic header 16-byte random. Tidak ada upload.</div>
+
+  <label>File HTML</label>
+  <input type="file" id="file" accept=".html,.htm">
+
+  <label>Kata sandi</label>
+  <input type="password" id="pwd" placeholder="Boleh 1 karakter seperti 🥳">
+  <div class="warn" id="wshort">Saran: gunakan 8+ karakter untuk file publik</div>
+
+  <label>Konfirmasi</label>
+  <input type="password" id="pwd2" placeholder="Ulangi">
+  <div class="warn err" id="wmatch">Tidak cocok</div>
+
+  <button class="btn" id="go">Enkripsi & Download</button>
+  <div class="status" id="st"></div>
+  <div class="result" id="res"><div id="resinfo"></div><a class="dl" id="dl" href="#">Download ulang</a></div>
 </div>
 
 <script>
-(function() {
-    const ARGON2_MEM = 65536, ARGON2_TIME = 4, ARGON2_PARALLEL = 2, ARGON2_HASH_LEN = 32;
-    const MAGIC_LEN = 16, MAX_ATTEMPTS = 3;
-    let fileContent = null, fileName = '';
-    let argon2Ready = false, argon2Code = '', wasmBase64 = '';
+const $=id=>document.getElementById(id);
+const fileI=$('file'), pwd=$('pwd'), pwd2=$('pwd2'), go=$('go'), st=$('st'), res=$('res'), resinfo=$('resinfo'), dl=$('dl'), wshort=$('wshort'), wmatch=$('wmatch');
 
-    const fileInput = document.getElementById('fileInput');
-    const passInput = document.getElementById('password');
-    const confirmInput = document.getElementById('confirmPass');
-    const encryptBtn = document.getElementById('encryptBtn');
-    const logDiv = document.getElementById('logArea');
+pwd.addEventListener('input',()=>{wshort.style.display=pwd.value.length>0 && pwd.value.length<8?'block':'none';check()});
+pwd2.addEventListener('input',check);
+function check(){wmatch.style.display=pwd2.value && pwd.value!==pwd2.value?'block':'none'}
 
-    // Ambil decoyHTML dari template tersembunyi (tanpa string literal raksasa)
-    const decoyHTML = document.getElementById('decoy-template').innerHTML.trim();
+function b64(buf){let binary='';const bytes=new Uint8Array(buf);const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk){binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk))}return btoa(binary)}
+function u8(b64s){const bin=atob(b64s);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
 
-    function log(msg, type) { logDiv.style.display='block'; logDiv.className='log '+type; logDiv.textContent=msg; }
+go.onclick=async()=>{
+  const f=fileI.files[0]; if(!f){alert('Pilih file dulu');return}
+  if(!pwd.value){alert('Isi sandi');return}
+  if(pwd.value!==pwd2.value){alert('Konfirmasi beda');return}
+  go.disabled=true; res.style.display='none'; st.style.display='block'; st.textContent='Membaca file...';
+  try{
+    const html=await f.text();
+    st.textContent='Membuat kunci...';
+    const magic=crypto.getRandomValues(new Uint8Array(16));
+    const salt=crypto.getRandomValues(new Uint8Array(16));
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    // PBKDF2 via CryptoJS
+    const saltWA=CryptoJS.lib.WordArray.create(salt);
+    const pbkdf2=CryptoJS.PBKDF2(pwd.value, saltWA, {keySize:256/32, iterations:100000, hasher:CryptoJS.algo.SHA256}).toString(CryptoJS.enc.Hex);
+    st.textContent='Argon2id memory-hard...';
+    await new Promise(r=>setTimeout(r,30));
+    const argon=await argon2.hash({pass:pbkdf2, salt:salt, time:3, mem:65536, hashLen:32, parallelism:1, type:argon2.ArgonType.Argon2id});
+    const key=await crypto.subtle.importKey('raw', argon.hash, {name:'AES-GCM'}, false, ['encrypt']);
+    st.textContent='Enkripsi AES-GCM...';
+    const ctBuf=await crypto.subtle.encrypt({name:'AES-GCM', iv:iv}, key, new TextEncoder().encode(html));
+    const ct=new Uint8Array(ctBuf);
+    const combined=new Uint8Array(16+16+12+ct.length);
+    combined.set(magic,0); combined.set(salt,16); combined.set(iv,32); combined.set(ct,44);
+    const payload=b64(combined);
 
-    function bufferToBase64(buf) {
-        const bytes = new Uint8Array(buf);
-        let bin = '';
-        for (let i=0; i<bytes.byteLength; i+=0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i+0x8000));
-        return btoa(bin);
-    }
+    st.textContent='Membangun file terproteksi...';
+    const outName=f.name.replace(/\.html?$/i,'')+'-enkripsiketat.html';
 
-    async function initArgon2() {
-        if (argon2Ready) return true;
-        log('📡 Mendownload Argon2 dari CDN...', 'info');
-        try {
-            const [jsRes, wasmRes] = await Promise.all([
-                fetch('https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2.min.js'),
-                fetch('https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2.wasm')
-            ]);
-            if (!jsRes.ok || !wasmRes.ok) throw new Error('Gagal fetch');
+    const template = [
+'<!DOCTYPE html>',
+'<html lang="id">',
+'<head>',
+'<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
+'<title>Dokumen Terenkripsi</title>',
+'<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">',
+'<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"><\/script>',
+'<script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.3/dist/argon2-bundled.min.js"><\/script>',
+'<style>',
+':root{--bg:#0f172a;--neon:#10b981;--glass:rgba(30,41,59,.78)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#e2e8f0;font-family:"Segoe UI",system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}',
+'.lock{width:100%;max-width:420px;background:var(--glass);backdrop-filter:blur(18px);border:1px solid rgba(16,185,129,.3);border-radius:22px;padding:34px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.6)}',
+'.ico{width:70px;height:70px;margin:0 auto 16px;border-radius:18px;background:linear-gradient(135deg,var(--neon),#059669);display:flex;align-items:center;justify-content:center;color:#0b1f16;font-size:30px;box-shadow:0 8px 24px rgba(16,185,129,.35)}',
+'h1{margin:0 0 6px;font-size:22px}p{margin:0 0 20px;color:#94a3b8;font-size:13px}',
+'input{width:100%;padding:13px 14px;background:#0b1220;border:1px solid #243244;border-radius:12px;color:#e2e8f0;outline:none;margin-bottom:10px}',
+'input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(16,185,129,.18)}',
+'.btn{width:100%;padding:12px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--neon),#059669);color:#052e1a;font-weight:800;cursor:pointer}',
+'.err{min-height:18px;color:#f87171;font-size:13px;margin-top:8px}',
+'</style>',
+'</head>',
+'<body>',
+'<div class="lock" id="lock">',
+'<div class="ico"><i class="fa-solid fa-lock"></i></div>',
+'<h1>Konten Terkunci</h1>',
+'<p>PBKDF2 + Argon2id + AES-GCM</p>',
+'<input type="password" id="p" placeholder="Masukkan kata sandi" autocomplete="current-password">',
+'<button class="btn" id="b">Buka</button>',
+'<div class="err" id="e"></div>',
+'</div>',
+'<script>',
+'const DATA="__PAYLOAD__";',
+'const KEY="fail_"+DATA.slice(0,20);',
+'function u8(b){const bin=atob(b);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}',
+'async function open(){',
+' const pw=document.getElementById("p").value; const err=document.getElementById("e"); const btn=document.getElementById("b");',
+' err.textContent=""; btn.disabled=true; btn.textContent="Memproses...";',
+' let fails=parseInt(localStorage.getItem(KEY)||"0"); if(fails>=5){decoy();return}',
+' try{',
+'  const all=u8(DATA); const salt=all.slice(16,32); const iv=all.slice(32,44); const ct=all.slice(44);',
+'  const saltWA=CryptoJS.lib.WordArray.create(salt);',
+'  const pbkdf2=CryptoJS.PBKDF2(pw, saltWA, {keySize:256/32, iterations:100000, hasher:CryptoJS.algo.SHA256}).toString(CryptoJS.enc.Hex);',
+'  const argon=await argon2.hash({pass:pbkdf2, salt:salt, time:3, mem:65536, hashLen:32, parallelism:1, type:argon2.ArgonType.Argon2id});',
+'  const key=await crypto.subtle.importKey("raw", argon.hash, {name:"AES-GCM"}, false, ["decrypt"]);',
+'  const plain=await crypto.subtle.decrypt({name:"AES-GCM", iv:iv}, key, ct);',
+'  const html=new TextDecoder().decode(plain);',
+'  localStorage.removeItem(KEY);',
+'  const prot="<scr"+"ipt>document.addEventListener(\'contextmenu\',e=>{e.preventDefault()});document.addEventListener(\'selectstart\',e=>e.preventDefault());document.addEventListener(\'copy\',e=>e.preventDefault());document.addEventListener(\'keydown\',e=>{if(e.key===\'F12\'||(e.ctrlKey&&e.shiftKey&&[\'I\',\'J\',\'C\'].includes(e.key.toUpperCase()))||(e.ctrlKey&&[\'U\',\'S\',\'P\'].includes(e.key.toUpperCase()))){e.preventDefault();e.stopPropagation()}});setInterval(()=>{const t=performance.now();debugger;if(performance.now()-t>150){document.documentElement.innerHTML=\'\'}},1200);<\/script><style>*{user-select:none!important;-webkit-user-select:none!important}body{-webkit-touch-callout:none}</style>";',
+'  document.open(); document.write(prot+html); document.close();',
+' }catch(ex){',
+'  fails++; localStorage.setItem(KEY,fails);',
+'  if(fails>=5){decoy()}else{err.textContent="Sandi salah. Percobaan "+fails+"/5"; btn.disabled=false; btn.textContent="Buka"}',
+' }',
+'}',
+'function decoy(){',
+' document.body.innerHTML=""; document.body.style.margin="0"; document.body.style.background="#0f172a"; document.body.style.overflow="hidden";',
+' const w=document.createElement("div"); w.style.position="fixed"; w.style.inset="0"; w.style.background="#0f172a";',
+' w.innerHTML=\'<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(16,185,129,.09)1px,transparent 1px),linear-gradient(90deg,rgba(16,185,129,.09)1px,transparent 1px);background-size:56px 56px;animation:p 4s infinite"></div><h1 style="position:relative;z-index:2;color:#10b981;text-align:center;margin-top:22vh;font-size:clamp(28px,7vw,56px);text-shadow:0 0 24px #10b981;letter-spacing:3px">ACCESS GRANTED</h1><p style="position:relative;z-index:2;color:#34d399;text-align:center;opacity:.85;letter-spacing:2px">The Illusion of Success</p>\';',
+' document.body.appendChild(w);',
+' const s=document.createElement("style"); s.textContent="@keyframes p{0%,100%{opacity:.35}50%{opacity:.75}}@keyframes f{0%{transform:translateY(0) scale(.6) rotate(0);opacity:.2}50%{opacity:1}100%{transform:translateY(-110vh) scale(1.4) rotate(360deg);opacity:0}}"; document.head.appendChild(s);',
+' const cols=["#10b981","#34d399","#f59e0b","#ec4899","#3b82f6"]; const icons=["fa-lock","fa-shield-halved","fa-key","fa-fingerprint","fa-eye","fa-bug","fa-skull","fa-ghost","fa-robot","fa-microchip","fa-code","fa-bolt","fa-wifi"];',
+' for(let i=0;i<85;i++){const el=document.createElement("i"); el.className="fa-solid "+icons[Math.floor(Math.random()*icons.length)]; el.style.position="absolute"; el.style.left=Math.random()*100+"%"; el.style.top=100+Math.random()*20+"%"; el.style.fontSize=(12+Math.random()*30)+"px"; el.style.color=cols[Math.floor(Math.random()*cols.length)]; el.style.textShadow="0 0 12px currentColor"; el.style.animation="f "+(9+Math.random()*10)+"s linear infinite"; el.style.animationDelay=(-Math.random()*18)+"s"; el.style.zIndex="1"; w.appendChild(el)}',
+'}',
+'document.getElementById("b").onclick=open; document.getElementById("p").addEventListener("keydown",e=>{if(e.key==="Enter")open()});',
+'<\/script>',
+'</body>',
+'</html>'
+].join('\n');
 
-            const jsCode = await jsRes.text();
-            const wasmBuffer = await wasmRes.arrayBuffer();
-            wasmBase64 = bufferToBase64(wasmBuffer);
-
-            // Sediakan wasmBinary agar library tidak fetch
-            window.Module = { wasmBinary: new Uint8Array(wasmBuffer) };
-            eval(jsCode);
-
-            if (!window.argon2 || !window.argon2.hash) {
-                window.argon2 = window.Module.argon2 || window.Module;
-                if (!window.argon2.hash) throw new Error('argon2.hash tidak ditemukan');
-            }
-
-            argon2Code = jsCode;
-            argon2Ready = true;
-            log('✅ Argon2id siap', 'success');
-            return true;
-        } catch(e) {
-            log('❌ Gagal: '+e.message, 'error');
-            return false;
-        }
-    }
-
-    async function encryptContent(plain, pw) {
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const hash = await argon2.hash({
-            pass: pw, salt, time: ARGON2_TIME, mem: ARGON2_MEM,
-            hashLen: ARGON2_HASH_LEN, parallelism: ARGON2_PARALLEL,
-            type: argon2.ArgonType.Argon2id
-        });
-        const key = await crypto.subtle.importKey('raw', hash.hash, {name:'AES-GCM'}, false, ['encrypt']);
-        const enc = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, new TextEncoder().encode(plain));
-        return { salt, iv, ciphertext: new Uint8Array(enc) };
-    }
-
-    function buildOutput(encB64, magicB64, origName) {
-        const styles = ":root{--bg:#0a0f14;--panel:#111922;--neon:#00ff88}body{background:var(--bg);margin:0;padding:20px;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Inter',system-ui,sans-serif}.vault-card{background:var(--panel);border:1px solid #1f2a33;border-radius:24px;padding:40px 30px;max-width:420px;width:100%;text-align:center;box-shadow:0 0 25px rgba(0,255,136,0.1)}h1{color:var(--neon);font-size:26px;margin:0 0 8px}.file-hint{color:#8a95a5;font-size:13px;margin-bottom:24px}input{width:100%;padding:14px;background:#1a232e;border:1px solid #1f2a33;border-radius:14px;color:#fff;font-size:16px;outline:none;margin-bottom:18px}input:focus{border-color:var(--neon)}button{width:100%;padding:14px;background:var(--neon);border:none;border-radius:14px;color:#0a0f14;font-weight:bold;font-size:15px;cursor:pointer}#errorMsg{color:#ff4466;margin-top:12px;font-size:14px}#attemptHint{color:#8a95a5;font-size:12px;margin-top:6px}";
-
-        // Bangun output tanpa menyematkan string besar dalam literal JS
-        let out = '';
-        out += '<!DOCTYPE html>\n<html lang="id">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0">\n';
-        out += '<title>🔐 '+origName+' · Protected</title>\n<style>'+styles+'</style>\n</head>\n<body>\n';
-        out += '<div class="vault-card">\n<h1>🔒 VAULT LOCKED</h1>\n<p class="file-hint">'+origName+'</p>\n';
-        out += '<input type="password" id="passInput" placeholder="Password rahasia" autofocus>\n';
-        out += '<button id="unlockBtn">Buka</button>\n<div id="errorMsg"></div>\n<div id="attemptHint"></div>\n</div>\n';
-
-        // Data yang besar disimpan di elemen script terpisah
-        out += '<script id="wasm-data" type="application/octet-stream">'+wasmBase64+'<\/script>\n';
-        out += '<script id="argon2-code" type="application/octet-stream">'+escHtml(argon2Code)+'<\/script>\n';
-        out += '<script id="decoy-template" type="text/html">'+decoyHTML+'<\/script>\n';
-
-        // Script utama dekripsi
-        out += '<script>\n';
-        out += '(function() {\n';
-        out += 'var wasmB64 = document.getElementById("wasm-data").textContent;\n';
-        out += 'var argon2Code = document.getElementById("argon2-code").textContent;\n';
-        out += 'var decoyHTML = document.getElementById("decoy-template").innerHTML;\n';
-        out += 'var wasmBytes = Uint8Array.from(atob(wasmB64), function(c) { return c.charCodeAt(0); });\n';
-        out += 'window.Module = { wasmBinary: wasmBytes };\n';
-        out += 'eval(argon2Code);\n';
-        out += 'if (!window.argon2) { window.argon2 = window.Module.argon2 || window.Module; }\n';
-
-        out += 'var encryptedPayload = document.getElementById("vault-data").textContent;\n';
-        out += 'var magicBase64 = document.getElementById("magic-data").textContent;\n';
-        out += 'var attempts = 0;\n';
-        out += 'function base64ToBuffer(b64) { var bin = atob(b64); var arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return arr; }\n';
-        out += 'async function decryptAndShow() {\n';
-        out += 'var pw = document.getElementById("passInput").value;\n';
-        out += 'if (!pw) { document.getElementById("errorMsg").textContent = "❌ Password kosong"; return; }\n';
-        out += 'try {\n';
-        out += 'var magic = base64ToBuffer(magicBase64);\n';
-        out += 'var full = base64ToBuffer(encryptedPayload);\n';
-        out += 'if (full.slice(0, 16).some(function(b, i) { return b !== magic[i]; })) throw new Error("rusak");\n';
-        out += 'var salt = full.slice(16, 32);\n';
-        out += 'var iv = full.slice(32, 44);\n';
-        out += 'var ct = full.slice(44);\n';
-        out += 'var hash = await argon2.hash({ pass: pw, salt: salt, time: '+ARGON2_TIME+', mem: '+ARGON2_MEM+', hashLen: '+ARGON2_HASH_LEN+', parallelism: '+ARGON2_PARALLEL+', type: argon2.ArgonType.Argon2id });\n';
-        out += 'var key = await crypto.subtle.importKey("raw", hash.hash, { name: "AES-GCM" }, false, ["decrypt"]);\n';
-        out += 'var dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);\n';
-        out += 'var htmlContent = new TextDecoder().decode(dec);\n';
-        out += 'document.open();\n';
-        out += 'document.write(htmlContent);\n';
-        out += 'document.close();\n';
-        out += '} catch (e) {\n';
-        out += 'attempts++;\n';
-        out += 'if (attempts >= 3) {\n';
-        out += 'document.open();\n';
-        out += 'document.write(decoyHTML);\n';
-        out += 'document.close();\n';
-        out += 'return;\n';
-        out += '}\n';
-        out += 'document.getElementById("errorMsg").textContent = "❌ Password salah";\n';
-        out += 'document.getElementById("attemptHint").textContent = "🔁 Kesempatan tersisa: " + (3 - attempts);\n';
-        out += 'document.getElementById("passInput").value = "";\n';
-        out += '}\n';
-        out += '}\n';
-        out += 'document.getElementById("unlockBtn").onclick = decryptAndShow;\n';
-        out += 'document.getElementById("passInput").onkeydown = function(e) { if (e.key === "Enter") decryptAndShow(); };\n';
-        out += '})();\n';
-        out += '</script>\n';
-
-        // Data terenkripsi
-        out += '<script id="vault-data" type="application/octet-stream">'+encB64+'<\/script>\n';
-        out += '<script id="magic-data" type="application/octet-stream">'+magicB64+'<\/script>\n';
-        out += '</body>\n</html>';
-        return out;
-    }
-
-    // Escape minimal untuk isi argon2Code dalam elemen HTML
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function updateBtn() { encryptBtn.disabled = !(fileContent && passInput.value && passInput.value===confirmInput.value); }
-
-    fileInput.addEventListener('change', e => {
-        const f = e.target.files[0];
-        if (!f) return;
-        fileName = f.name.replace(/\.html?$/i,'');
-        const r = new FileReader();
-        r.onload = ev => { fileContent=ev.target.result; log('📄 '+f.name,'success'); updateBtn(); };
-        r.readAsText(f);
-    });
-    passInput.addEventListener('input', updateBtn);
-    confirmInput.addEventListener('input', updateBtn);
-
-    encryptBtn.addEventListener('click', async () => {
-        if (!fileContent) return log('Pilih file dulu','error');
-        if (passInput.value !== confirmInput.value) return log('Password tidak cocok','error');
-
-        encryptBtn.disabled=true; encryptBtn.textContent='⏳...'; log('🔐 Mengenkripsi...','info');
-        try {
-            if (!argon2Ready) { const ok = await initArgon2(); if (!ok) throw new Error('Argon2 gagal'); }
-            const enc = await encryptContent(fileContent, passInput.value);
-            const magic = crypto.getRandomValues(new Uint8Array(16));
-            const comb = new Uint8Array(16+16+12+enc.ciphertext.length);
-            comb.set(magic,0); comb.set(enc.salt,16); comb.set(enc.iv,32); comb.set(enc.ciphertext,44);
-            const outHTML = buildOutput(bufferToBase64(comb), bufferToBase64(magic), fileName+'.html');
-            const blob = new Blob([outHTML],{type:'text/html'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href=url; a.download=fileName+'-enkripsiketat.html'; a.click();
-            URL.revokeObjectURL(url);
-            log('✅ SUKSES! File terenkripsi terunduh.','success');
-        } catch(err) {
-            log('❌ '+err.message,'error');
-        } finally {
-            encryptBtn.disabled=false; encryptBtn.textContent='🔒 Enkripsi & Download';
-        }
-    });
-
-    initArgon2().catch(()=>{});
-})();
+    const finalHtml = template.replace('__PAYLOAD__', payload);
+    const blob=new Blob([finalHtml],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    dl.href=url; dl.download=outName; dl.click();
+    resinfo.innerHTML='File <b>'+outName+'</b> siap. Payload '+(payload.length/1024).toFixed(1)+' KB';
+    res.style.display='block'; st.textContent='Selesai';
+  }catch(e){console.error(e); st.textContent='Error: '+e.message; alert('Gagal: '+e.message)}
+  finally{go.disabled=false; setTimeout(()=>st.style.display='none',1800)}
+}
 </script>
 </body>
 </html>
