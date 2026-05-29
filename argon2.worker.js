@@ -1,0 +1,1 @@
+Couldn't find the requested file /dist/argon2.worker.js in argon2-browser.
