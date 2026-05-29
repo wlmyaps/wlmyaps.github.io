@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ ULTIMATE VAULT v4.0 — FINAL FIX</title>
+    <title>🛡️ ULTIMATE VAULT v4.1 — DATA ELEMENT</title>
     <style>
         :root {
             --bg: #0a0f14; --panel: #111922; --neon: #00ff88;
@@ -26,8 +26,8 @@
 </head>
 <body>
 <div class="card">
-    <h1>🔐 VAULT v4.0</h1>
-    <div class="subtitle">PARANOID SOVEREIGN · Argon2id + AES‑GCM · Decoy · WASM INJECTION</div>
+    <h1>🔐 VAULT v4.1</h1>
+    <div class="subtitle">PARANOID SOVEREIGN · Data Element · Anti Error</div>
     <label>📁 Pilih File HTML</label>
     <input type="file" id="fileInput" accept=".html,.htm">
     <label>🔑 Password</label>
@@ -74,20 +74,13 @@
             const wasmBuffer = await wasmRes.arrayBuffer();
             wasmBase64 = bufferToBase64(wasmBuffer);
 
-            // Sediakan wasmBinary agar library tidak perlu fetch
-            window.Module = {
-                wasmBinary: new Uint8Array(wasmBuffer)
-            };
-
+            // Set wasm binary sebelum eval
+            window.Module = { wasmBinary: new Uint8Array(wasmBuffer) };
             eval(jsCode);
 
-            // Pastikan argon2 global tersedia
-            if (!window.argon2) {
-                window.argon2 = window.Module.argon2 || window.Module;
-            }
-
             if (!window.argon2 || !window.argon2.hash) {
-                throw new Error('argon2 tidak memiliki fungsi hash');
+                window.argon2 = window.Module.argon2 || window.Module;
+                if (!window.argon2.hash) throw new Error('argon2.hash tidak ditemukan');
             }
 
             argon2Code = jsCode;
@@ -116,10 +109,6 @@
     function buildOutput(encB64, magicB64, origName) {
         const decoyHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>The Illusion of Success</title>\n<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">\n<style>\n:root{--bg:#0a0f14;--neon:#00ff88}body{margin:0;background:var(--bg);height:100vh;overflow:hidden;font-family:system-ui;display:flex;align-items:center;justify-content:center}.container{text-align:center;z-index:10}h1{color:var(--neon);font-size:3rem;animation:pulse 2s infinite}.sub{color:#8a95a5;margin-top:10px;font-size:1.3rem}.icon-chaos{position:absolute;font-size:2rem;animation:float 4s infinite alternate,colorShift 3s infinite;pointer-events:none}@keyframes pulse{0%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}100%{opacity:.8;transform:scale(1)}}@keyframes float{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50px,-30px) rotate(15deg)}}@keyframes colorShift{0%{color:#ff4466}25%{color:#ffaa00}50%{color:#00ff88}75%{color:#00aaff}100%{color:#ff44ff}}\n</style>\n</head>\n<body>\n<div class="container">\n<h1>✨ THE ILLUSION OF SUCCESS ✨</h1>\n<div class="sub">Akses ditolak · Decoy aktif</div>\n</div>\n<script>\nvar icons=["fa-ghost","fa-skull","fa-bomb","fa-fire","fa-bolt","fa-meteor","fa-dragon","fa-crow","fa-spider","fa-hippo","fa-otter","fa-fish","fa-cat","fa-dog","fa-kiwi-bird","fa-feather","fa-cannabis","fa-jedi","fa-yin-yang","fa-atom","fa-dharmachakra","fa-pastafarianism","fa-peace","fa-rocket","fa-robot","fa-alien","fa-space-shuttle","fa-satellite","fa-moon","fa-sun"];\nfor(var i=0;i<45;i++){var el=document.createElement("i");el.className="fa-solid "+icons[Math.floor(Math.random()*icons.length)]+" icon-chaos";el.style.left=Math.random()*90+"%";el.style.top=Math.random()*85+"%";el.style.animationDelay=Math.random()*3+"s";el.style.animationDuration=(Math.random()*5+3)+"s";el.style.fontSize=(Math.random()*4+1.5)+"rem";document.body.appendChild(el);}\n<\/script>\n</body>\n</html>';
 
-        // Siapkan string untuk output
-        const decoyLiteral = JSON.stringify(decoyHTML);
-        // argon2Code akan kita embed langsung, tapi perlu set wasmBinary dulu
-        // Kita akan buat kode inisialisasi wasm terpisah
         const styles = ":root{--bg:#0a0f14;--panel:#111922;--neon:#00ff88}body{background:var(--bg);margin:0;padding:20px;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Inter',system-ui,sans-serif}.vault-card{background:var(--panel);border:1px solid #1f2a33;border-radius:24px;padding:40px 30px;max-width:420px;width:100%;text-align:center;box-shadow:0 0 25px rgba(0,255,136,0.1)}h1{color:var(--neon);font-size:26px;margin:0 0 8px}.file-hint{color:#8a95a5;font-size:13px;margin-bottom:24px}input{width:100%;padding:14px;background:#1a232e;border:1px solid #1f2a33;border-radius:14px;color:#fff;font-size:16px;outline:none;margin-bottom:18px}input:focus{border-color:var(--neon)}button{width:100%;padding:14px;background:var(--neon);border:none;border-radius:14px;color:#0a0f14;font-weight:bold;font-size:15px;cursor:pointer}#errorMsg{color:#ff4466;margin-top:12px;font-size:14px}#attemptHint{color:#8a95a5;font-size:12px;margin-top:6px}";
 
         let out = '';
@@ -129,69 +118,72 @@
         out += '<input type="password" id="passInput" placeholder="Password rahasia" autofocus>\n';
         out += '<button id="unlockBtn">Buka</button>\n<div id="errorMsg"></div>\n<div id="attemptHint"></div>\n</div>\n';
 
-        // Inisialisasi argon2 dengan wasmBase64 yang diembed
-        out += '<script>\n';
-        out += '// Wasm binary embedded\n';
-        out += 'var wasmBase64 = "'+wasmBase64+'";\n';
-        out += 'var wasmBytes = Uint8Array.from(atob(wasmBase64), function(c) { return c.charCodeAt(0); });\n';
-        out += 'window.Module = { wasmBinary: wasmBytes };\n';
-        out += '</script>\n';
+        // Simpan wasm base64 sebagai data element, bukan dalam string literal
+        out += '<script id="wasm-data" type="application/octet-stream">'+wasmBase64+'<\/script>\n';
+        // Simpan argon2Code sebagai data element
+        out += '<script id="argon2-code" type="application/octet-stream">'+escapeHtml(argon2Code)+'<\/script>\n';
 
-        // Embed argon2Code dan eval
-        const argon2Literal = JSON.stringify(argon2Code);
+        // Script utama
         out += '<script>\n';
-        out += 'var argon2Code = '+argon2Literal+';\n';
+        out += '(function() {\n';
+        out += 'var wasmB64 = document.getElementById("wasm-data").textContent;\n';
+        out += 'var argon2Code = document.getElementById("argon2-code").textContent;\n';
+        out += 'var wasmBytes = Uint8Array.from(atob(wasmB64), function(c) { return c.charCodeAt(0); });\n';
+        out += 'window.Module = { wasmBinary: wasmBytes };\n';
         out += 'eval(argon2Code);\n';
         out += 'if (!window.argon2) { window.argon2 = window.Module.argon2 || window.Module; }\n';
-        out += '</script>\n';
 
-        // Data terenkripsi
-        out += '<script id="vault-data" type="application/octet-stream">'+encB64+'</script>\n';
-        out += '<script id="magic-data" type="application/octet-stream">'+magicB64+'</script>\n';
-
-        // Skrip dekripsi (tanpa perubahan)
-        out += '<script>\n';
-        out += '(function(){\n';
-        out += 'var encryptedPayload=document.getElementById("vault-data").textContent;\n';
-        out += 'var magicBase64=document.getElementById("magic-data").textContent;\n';
-        out += 'var attempts=0;\n';
-        out += 'var decoyHTML='+decoyLiteral+';\n';
-        out += 'function base64ToBuffer(b64){var bin=atob(b64);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return arr;}\n';
-        out += 'async function decryptAndShow(){\n';
-        out += 'var pw=document.getElementById("passInput").value;\n';
-        out += 'if(!pw){document.getElementById("errorMsg").textContent="❌ Password kosong";return;}\n';
-        out += 'try{\n';
-        out += 'var magic=base64ToBuffer(magicBase64);\n';
-        out += 'var full=base64ToBuffer(encryptedPayload);\n';
-        out += 'if(full.slice(0,16).some(function(b,i){return b!==magic[i];}))throw new Error("rusak");\n';
-        out += 'var salt=full.slice(16,32);\n';
-        out += 'var iv=full.slice(32,44);\n';
-        out += 'var ct=full.slice(44);\n';
-        out += 'var hash=await argon2.hash({pass:pw,salt:salt,time:'+ARGON2_TIME+',mem:'+ARGON2_MEM+',hashLen:'+ARGON2_HASH_LEN+',parallelism:'+ARGON2_PARALLEL+',type:argon2.ArgonType.Argon2id});\n';
-        out += 'var key=await crypto.subtle.importKey("raw",hash.hash,{name:"AES-GCM"},false,["decrypt"]);\n';
-        out += 'var dec=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},key,ct);\n';
-        out += 'var htmlContent=new TextDecoder().decode(dec);\n';
+        // Lanjutkan dengan vault data
+        out += 'var encryptedPayload = document.getElementById("vault-data").textContent;\n';
+        out += 'var magicBase64 = document.getElementById("magic-data").textContent;\n';
+        out += 'var attempts = 0;\n';
+        out += 'var decoyHTML = '+JSON.stringify(decoyHTML)+';\n';
+        out += 'function base64ToBuffer(b64) { var bin = atob(b64); var arr = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); return arr; }\n';
+        out += 'async function decryptAndShow() {\n';
+        out += 'var pw = document.getElementById("passInput").value;\n';
+        out += 'if (!pw) { document.getElementById("errorMsg").textContent = "❌ Password kosong"; return; }\n';
+        out += 'try {\n';
+        out += 'var magic = base64ToBuffer(magicBase64);\n';
+        out += 'var full = base64ToBuffer(encryptedPayload);\n';
+        out += 'if (full.slice(0, 16).some(function(b, i) { return b !== magic[i]; })) throw new Error("rusak");\n';
+        out += 'var salt = full.slice(16, 32);\n';
+        out += 'var iv = full.slice(32, 44);\n';
+        out += 'var ct = full.slice(44);\n';
+        out += 'var hash = await argon2.hash({ pass: pw, salt: salt, time: '+ARGON2_TIME+', mem: '+ARGON2_MEM+', hashLen: '+ARGON2_HASH_LEN+', parallelism: '+ARGON2_PARALLEL+', type: argon2.ArgonType.Argon2id });\n';
+        out += 'var key = await crypto.subtle.importKey("raw", hash.hash, { name: "AES-GCM" }, false, ["decrypt"]);\n';
+        out += 'var dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);\n';
+        out += 'var htmlContent = new TextDecoder().decode(dec);\n';
         out += 'document.open();\n';
         out += 'document.write(htmlContent);\n';
         out += 'document.close();\n';
-        out += '}catch(e){\n';
+        out += '} catch (e) {\n';
         out += 'attempts++;\n';
-        out += 'if(attempts>=3){\n';
+        out += 'if (attempts >= 3) {\n';
         out += 'document.open();\n';
         out += 'document.write(decoyHTML);\n';
         out += 'document.close();\n';
         out += 'return;\n';
         out += '}\n';
-        out += 'document.getElementById("errorMsg").textContent="❌ Password salah";\n';
-        out += 'document.getElementById("attemptHint").textContent="🔁 Kesempatan tersisa: "+(3-attempts);\n';
-        out += 'document.getElementById("passInput").value="";\n';
+        out += 'document.getElementById("errorMsg").textContent = "❌ Password salah";\n';
+        out += 'document.getElementById("attemptHint").textContent = "🔁 Kesempatan tersisa: " + (3 - attempts);\n';
+        out += 'document.getElementById("passInput").value = "";\n';
         out += '}\n';
         out += '}\n';
-        out += 'document.getElementById("unlockBtn").onclick=decryptAndShow;\n';
-        out += 'document.getElementById("passInput").onkeydown=function(e){if(e.key==="Enter")decryptAndShow();};\n';
+        out += 'document.getElementById("unlockBtn").onclick = decryptAndShow;\n';
+        out += 'document.getElementById("passInput").onkeydown = function(e) { if (e.key === "Enter") decryptAndShow(); };\n';
         out += '})();\n';
-        out += '</script>\n</body>\n</html>';
+        out += '</script>\n';
+
+        // Data terenkripsi
+        out += '<script id="vault-data" type="application/octet-stream">'+encB64+'<\/script>\n';
+        out += '<script id="magic-data" type="application/octet-stream">'+magicB64+'<\/script>\n';
+        out += '</body>\n</html>';
         return out;
+    }
+
+    // Helper untuk escape HTML di dalam script element
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function updateBtn() { encryptBtn.disabled = !(fileContent && passInput.value && passInput.value===confirmInput.value); }
@@ -223,7 +215,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href=url; a.download=fileName+'-enkripsiketat.html'; a.click();
             URL.revokeObjectURL(url);
-            log('✅ SUKSES! File terunduh.','success');
+            log('✅ SUKSES! File terenkripsi terunduh.','success');
         } catch(err) {
             log('❌ '+err.message,'error');
         } finally {
