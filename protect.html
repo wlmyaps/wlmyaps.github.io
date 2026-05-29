@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ ULTIMATE VAULT v3.8 — HTTPS READY</title>
+    <style>
+        :root {
+            --bg: #0a0f14; --panel: #111922; --neon: #00ff88;
+            --text: #c0c8d0; --border: #1f2a33; --input-bg: #1a232e; --error: #ff4466;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background: var(--bg); margin: 0; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 24px; padding: 32px 28px; max-width: 520px; width: 100%; box-shadow: 0 0 30px rgba(0,255,136,0.08); }
+        h1 { color: var(--neon); font-size: 24px; margin: 0 0 6px; }
+        .subtitle { color: #8a95a5; font-size: 13px; margin-bottom: 24px; }
+        label { color: var(--text); font-weight: 600; font-size: 13px; display: block; margin: 16px 0 6px; text-transform: uppercase; }
+        input[type="file"], input[type="password"] { width: 100%; padding: 12px 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: #fff; font-size: 15px; }
+        button { background: var(--neon); color: #0a0f14; border: none; padding: 14px 20px; border-radius: 14px; font-weight: 700; width: 100%; margin-top: 28px; cursor: pointer; }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .log { margin-top: 20px; padding: 14px; border-radius: 12px; font-size: 13px; display: none; }
+        .log.info { background: #1a2e2a; border-left: 4px solid var(--neon); color: #b0f0d0; }
+        .log.error { background: #2e1a1f; border-left: 4px solid var(--error); color: #ffb0bf; }
+        .log.success { background: #132a1c; border-left: 4px solid #2ea043; color: #a0e0b0; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🔐 VAULT v3.8</h1>
+    <div class="subtitle">PARANOID SOVEREIGN · Argon2id + AES‑GCM · Decoy · HTTPS</div>
+    <label>📁 Pilih File HTML</label>
+    <input type="file" id="fileInput" accept=".html,.htm">
+    <label>🔑 Password</label>
+    <input type="password" id="password" placeholder="Boleh 1 emoji 🥳">
+    <label>🔁 Konfirmasi Password</label>
+    <input type="password" id="confirmPass" placeholder="Ulangi password">
+    <button id="encryptBtn" disabled>🔒 Enkripsi & Download</button>
+    <div id="logArea" class="log"></div>
+</div>
+
+<script>
+(function() {
+    const ARGON2_MEM = 65536, ARGON2_TIME = 4, ARGON2_PARALLEL = 2, ARGON2_HASH_LEN = 32;
+    const MAGIC_LEN = 16, MAX_ATTEMPTS = 3;
+    let fileContent = null, fileName = '';
+    let argon2Ready = false, argon2Code = '';
+
+    const fileInput = document.getElementById('fileInput');
+    const passInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPass');
+    const encryptBtn = document.getElementById('encryptBtn');
+    const logDiv = document.getElementById('logArea');
+
+    function log(msg, type) { logDiv.style.display='block'; logDiv.className='log '+type; logDiv.textContent=msg; }
+
+    function bufferToBase64(buf) {
+        const bytes = new Uint8Array(buf);
+        let bin = '';
+        for (let i=0; i<bytes.byteLength; i+=0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i+0x8000));
+        return btoa(bin);
+    }
+
+    async function initArgon2() {
+        if (argon2Ready) return true;
+        log('📡 Memuat Argon2id dari CDN...', 'info');
+        try {
+            const [jsRes, wasmRes] = await Promise.all([
+                fetch('https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2.min.js'),
+                fetch('https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2.wasm')
+            ]);
+            if (!jsRes.ok || !wasmRes.ok) throw new Error('Gagal fetch CDN');
+            let jsCode = await jsRes.text();
+            const wasmB64 = bufferToBase64(await wasmRes.arrayBuffer());
+            // Tanamkan WASM sebagai data URL ke dalam kode JS
+            jsCode = jsCode.replace(/fetch\([^)]+\.wasm[^)]*\)/g, 'fetch("data:application/wasm;base64,'+wasmB64+'")');
+            argon2Code = jsCode;
+            eval(jsCode);
+            argon2Ready = true;
+            log('✅ Argon2id siap', 'success');
+            return true;
+        } catch(e) {
+            log('❌ Gagal: '+e.message, 'error');
+            return false;
+        }
+    }
+
+    async function encryptContent(plain, pw) {
+        if (!window.argon2) throw new Error('Argon2 tidak terdefinisi');
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const hash = await argon2.hash({ pass: pw, salt, time: ARGON2_TIME, mem: ARGON2_MEM, hashLen: ARGON2_HASH_LEN, parallelism: ARGON2_PARALLEL, type: argon2.ArgonType.Argon2id });
+        const key = await crypto.subtle.importKey('raw', hash.hash, {name:'AES-GCM'}, false, ['encrypt']);
+        const enc = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, new TextEncoder().encode(plain));
+        return { salt, iv, ciphertext: new Uint8Array(enc) };
+    }
+
+    function buildOutput(encB64, magicB64, origName) {
+        const decoyHTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>The Illusion of Success</title>\n<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">\n<style>\n:root{--bg:#0a0f14;--neon:#00ff88}body{margin:0;background:var(--bg);height:100vh;overflow:hidden;font-family:system-ui;display:flex;align-items:center;justify-content:center}.container{text-align:center;z-index:10}h1{color:var(--neon);font-size:3rem;animation:pulse 2s infinite}.sub{color:#8a95a5;margin-top:10px;font-size:1.3rem}.icon-chaos{position:absolute;font-size:2rem;animation:float 4s infinite alternate,colorShift 3s infinite;pointer-events:none}@keyframes pulse{0%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}100%{opacity:.8;transform:scale(1)}}@keyframes float{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50px,-30px) rotate(15deg)}}@keyframes colorShift{0%{color:#ff4466}25%{color:#ffaa00}50%{color:#00ff88}75%{color:#00aaff}100%{color:#ff44ff}}\n</style>\n</head>\n<body>\n<div class="container">\n<h1>✨ THE ILLUSION OF SUCCESS ✨</h1>\n<div class="sub">Akses ditolak · Decoy aktif</div>\n</div>\n<script>\nvar icons=["fa-ghost","fa-skull","fa-bomb","fa-fire","fa-bolt","fa-meteor","fa-dragon","fa-crow","fa-spider","fa-hippo","fa-otter","fa-fish","fa-cat","fa-dog","fa-kiwi-bird","fa-feather","fa-cannabis","fa-jedi","fa-yin-yang","fa-atom","fa-dharmachakra","fa-pastafarianism","fa-peace","fa-rocket","fa-robot","fa-alien","fa-space-shuttle","fa-satellite","fa-moon","fa-sun"];\nfor(var i=0;i<45;i++){var el=document.createElement("i");el.className="fa-solid "+icons[Math.floor(Math.random()*icons.length)]+" icon-chaos";el.style.left=Math.random()*90+"%";el.style.top=Math.random()*85+"%";el.style.animationDelay=Math.random()*3+"s";el.style.animationDuration=(Math.random()*5+3)+"s";el.style.fontSize=(Math.random()*4+1.5)+"rem";document.body.appendChild(el);}\n<\/script>\n</body>\n</html>';
+
+        const argon2Literal = JSON.stringify(argon2Code);
+        const decoyLiteral = JSON.stringify(decoyHTML);
+        const styles = ":root{--bg:#0a0f14;--panel:#111922;--neon:#00ff88}body{background:var(--bg);margin:0;padding:20px;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Inter',system-ui,sans-serif}.vault-card{background:var(--panel);border:1px solid #1f2a33;border-radius:24px;padding:40px 30px;max-width:420px;width:100%;text-align:center;box-shadow:0 0 25px rgba(0,255,136,0.1)}h1{color:var(--neon);font-size:26px;margin:0 0 8px}.file-hint{color:#8a95a5;font-size:13px;margin-bottom:24px}input{width:100%;padding:14px;background:#1a232e;border:1px solid #1f2a33;border-radius:14px;color:#fff;font-size:16px;outline:none;margin-bottom:18px}input:focus{border-color:var(--neon)}button{width:100%;padding:14px;background:var(--neon);border:none;border-radius:14px;color:#0a0f14;font-weight:bold;font-size:15px;cursor:pointer}#errorMsg{color:#ff4466;margin-top:12px;font-size:14px}#attemptHint{color:#8a95a5;font-size:12px;margin-top:6px}";
+
+        let out = '';
+        out += '<!DOCTYPE html>\n<html lang="id">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0">\n';
+        out += '<title>🔐 '+origName+' · Protected</title>\n<style>'+styles+'</style>\n</head>\n<body>\n';
+        out += '<div class="vault-card">\n<h1>🔒 VAULT LOCKED</h1>\n<p class="file-hint">'+origName+'</p>\n';
+        out += '<input type="password" id="passInput" placeholder="Password rahasia" autofocus>\n';
+        out += '<button id="unlockBtn">Buka</button>\n<div id="errorMsg"></div>\n<div id="attemptHint"></div>\n</div>\n';
+        out += '<script>\nvar argon2Code = '+argon2Literal+';\neval(argon2Code);\n<\/script>\n';
+        out += '<script id="vault-data" type="application/octet-stream">'+encB64+'<\/script>\n';
+        out += '<script id="magic-data" type="application/octet-stream">'+magicB64+'<\/script>\n';
+        out += '<script>\n(function(){var a=document.getElementById("vault-data").textContent,b=document.getElementById("magic-data").textContent,c=0,d='+decoyLiteral+';function e(f){var g=atob(f),h=new Uint8Array(g.length);for(var i=0;i<g.length;i++)h[i]=g.charCodeAt(i);return h}async function j(){var k=document.getElementById("passInput").value;if(!k){document.getElementById("errorMsg").textContent="❌ Password kosong";return}try{var l=e(b),m=e(a);if(m.slice(0,16).some(function(n,o){return n!==l[o]}))throw new Error("rusak");var p=m.slice(16,32),q=m.slice(32,44),r=m.slice(44),s=await argon2.hash({pass:k,salt:p,time:'+ARGON2_TIME+',mem:'+ARGON2_MEM+',hashLen:'+ARGON2_HASH_LEN+',parallelism:'+ARGON2_PARALLEL+',type:argon2.ArgonType.Argon2id}),t=await crypto.subtle.importKey("raw",s.hash,{name:"AES-GCM"},false,["decrypt"]),u=await crypto.subtle.decrypt({name:"AES-GCM",iv:q},t,r),v=new TextDecoder().decode(u);document.open();document.write(v);document.close()}catch(w){c++;if(c>=3){document.open();document.write(d);document.close();return}document.getElementById("errorMsg").textContent="❌ Password salah";document.getElementById("attemptHint").textContent="🔁 Kesempatan tersisa: "+(3-c);document.getElementById("passInput").value=""}}document.getElementById("unlockBtn").onclick=j;document.getElementById("passInput").onkeydown=function(x){if(x.key==="Enter")j()}})();\n<\/script>\n</body>\n</html>';
+        return out;
+    }
+
+    function updateBtn() { encryptBtn.disabled = !(fileContent && passInput.value && passInput.value===confirmInput.value); }
+
+    fileInput.addEventListener('change', e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        fileName = f.name.replace(/\.html?$/i,'');
+        const r = new FileReader();
+        r.onload = ev => { fileContent=ev.target.result; log('📄 '+f.name,'success'); updateBtn(); };
+        r.readAsText(f);
+    });
+    passInput.addEventListener('input', updateBtn);
+    confirmInput.addEventListener('input', updateBtn);
+
+    encryptBtn.addEventListener('click', async () => {
+        if (!fileContent) return log('Pilih file dulu','error');
+        if (passInput.value !== confirmInput.value) return log('Password tidak cocok','error');
+        encryptBtn.disabled=true; encryptBtn.textContent='⏳...'; log('🔐 Mengenkripsi...','info');
+        try {
+            if (!argon2Ready) { const ok = await initArgon2(); if (!ok) throw new Error('Argon2 gagal'); }
+            const enc = await encryptContent(fileContent, passInput.value);
+            const magic = crypto.getRandomValues(new Uint8Array(16));
+            const comb = new Uint8Array(16+16+12+enc.ciphertext.length);
+            comb.set(magic,0); comb.set(enc.salt,16); comb.set(enc.iv,32); comb.set(enc.ciphertext,44);
+            const outHTML = buildOutput(bufferToBase64(comb), bufferToBase64(magic), fileName+'.html');
+            const blob = new Blob([outHTML],{type:'text/html'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download=fileName+'-enkripsiketat.html'; a.click();
+            URL.revokeObjectURL(url);
+            log('✅ SUKSES! File terunduh.','success');
+        } catch(err) {
+            log('❌ '+err.message,'error');
+        } finally {
+            encryptBtn.disabled=false; encryptBtn.textContent='🔒 Enkripsi & Download';
+        }
+    });
+
+    initArgon2().catch(()=>{});
+})();
+</script>
+</body>
+</html>
