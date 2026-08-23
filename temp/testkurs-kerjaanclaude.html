@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurs 3D Box Berjenjang V7 - Struktur Bersih + Data Riil Only</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:#0f1115;color:#e5e7eb;padding:18px 14px 30px;overflow-x:hidden}
+h1{font-size:15px;font-weight:800;color:#fff;text-align:center;max-width:1050px;margin:6px auto 8px;line-height:1.35}
+.subtitle{font-size:11px;color:#9ca3af;text-align:center;margin-bottom:12px}
+.collapsible{background:#171a23;border:1px solid #242a38;border-radius:16px;max-width:1120px;margin:0 auto 14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.part-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;background:#12151e;border-bottom:1px solid #242a38;cursor:pointer;user-select:none}
+.part-head:hover{background:#1a1e2a}
+.part-head h2{font-size:13px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.part-head small{font-weight:400;color:#9ca3af;font-size:11px}
+.toggle-icon{font-size:12px;transition:transform .25s;color:#9ca3af}
+.collapsible.collapsed .part-body{max-height:0;opacity:0;padding:0 16px;pointer-events:none;overflow:hidden}
+.collapsible.collapsed .toggle-icon{transform:rotate(-90deg)}
+.part-body{padding:14px;transition:max-height .35s ease,opacity .25s ease,padding .25s ease;max-height:15000px;opacity:1}
+.panel-row{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:10px;font-weight:700;letter-spacing:.1em;color:#9ca3af}
+.field input[type=date],.field input[type=text]{background:#0f1219;border:1px solid #2a3142;color:#e5e7eb;border-radius:10px;padding:9px 11px;font-size:13px;min-width:160px;outline:none;width:100%}
+.search-wrap{position:relative;flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
+.search-inner{position:relative}
+.search-inner input{padding-right:36px}
+.clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;border:none;background:#2a3449;color:#e5e7eb;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.clear-btn.show{display:flex}
+.qbtn{background:#1f2533;border:1px solid #2e364a;color:#cbd5e1;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.qbtn.active{background:#f59e0b;color:#111;border-color:#f59e0b}
+.bank-grid{border:1px solid #242a38;border-radius:12px;padding:10px;background:#10131a;display:grid;grid-template-columns:repeat(6,1fr);gap:7px;max-height:none;overflow:visible;height:auto}
+@media(max-width:1120px){.bank-grid{grid-template-columns:repeat(5,1fr)}} 
+@media(max-width:900px){.bank-grid{grid-template-columns:repeat(4,1fr)}} 
+@media(max-width:640px){.bank-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.bank-grid{grid-template-columns:repeat(2,1fr)}}
+.bank-item{display:flex;align-items:center;gap:6px;background:#171c27;border:1px solid #262e40;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:700;cursor:pointer;user-select:none;transition:.15s}
+.bank-item.checked{background:#1e2535;border-color:#3a455e;color:#fff;box-shadow:0 0 0 1px var(--bcol, #fff) inset}
+.bank-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.abtn{background:#1f2533;border:1px solid #2e364a;color:#e5e7eb;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.abtn.primary{background:#f59e0b;border-color:#f59e0b;color:#111}
+.abtn:hover{filter:brightness(1.12)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stats.multi{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+@media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}.stats.multi{grid-template-columns:repeat(2,1fr)}}
+.card{background:linear-gradient(180deg,#1a1e28 0%,#14171f 100%);border:1px solid #262b36;border-radius:14px;padding:12px 14px;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#f59e0b)}
+.card-label{font-size:10px;letter-spacing:.08em;color:#9ca3af;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.card-value{font-size:17px;font-weight:800;color:#fff}
+.card-sub{font-size:11px;color:#9ca3af;margin-top:4px}
+.chart-wrap{background:#0f1219;border:1px solid #242a38;border-radius:12px;overflow:hidden}
+.chart-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #242a38;flex-wrap:wrap;gap:8px}
+.chart-head h3{font-size:12px;font-weight:800;color:#fff}
+.chart-head small{font-size:10px;color:#9ca3af}
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:9px 12px;border-bottom:1px solid #242a38;background:#12151e}
+.chart-legend .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#e5e7eb}
+.chart-legend .legend-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+.chart-body{display:flex}
+.y-axis{width:62px;flex-shrink:0;background:#12151e;border-right:1px solid #242a38;padding:14px 6px 46px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;position:sticky;left:0;z-index:5}
+.y-axis span{font-size:10px;color:#9ca3af;font-weight:600}
+.chart-scroll{flex:1;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth}
+.bars{display:flex;align-items:flex-end;gap:0;padding:18px 18px 0 18px;min-height:420px}
+.table-wrap{background:#0f1219;border:1px solid #242a38;border-radius:12px;overflow:hidden}
+.table-head{padding:10px 12px;border-bottom:1px solid #242a38;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.table-head h3{font-size:12px;font-weight:800;color:#fff}
+.table-scroll{overflow-x:auto;overflow-y:visible;max-height:none}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+th,td{padding:10px 12px;border-bottom:1px solid #242a38;text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#12151e;color:#9ca3af;font-size:10px;letter-spacing:.08em;font-weight:700;z-index:2;border-top:3px solid transparent}
+th.ticker-th{color:#fff;background:#161a27}
+td{color:#e5e7eb;background:#171a23}
+td.date{color:#9ca3af;font-weight:700;position:sticky;left:0;background:#12151e;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:800;margin-left:8px}
+.badge.up{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25)}
+.badge.down{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
+.badge.flat{background:#1f2533;color:#9ca3af;border:1px solid #2a3449}
+.filter-always{padding:14px;background:#171a23;border-bottom:1px solid #1f242f}
+.part-head.no-toggle{cursor:default}
+.part-head.no-toggle:hover{background:#12151e}
+#bank-collapse{margin:0;border:none;border-top:1px solid #242a38;border-radius:0;box-shadow:none;background:transparent}
+#bank-collapse .part-head{background:#131722}
+#bank-collapse .part-body{background:#10131a}
+
+.loading{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px}
+.date-cluster{position:relative;display:flex;flex-direction:column;align-items:center;flex-shrink:0;margin-right:18px}
+.cluster-bars{position:relative;display:block;height:360px}
+.bar-3d{position:absolute;bottom:0;width:54px;display:flex;flex-direction:column;align-items:center;cursor:pointer;--c:#f59e0b;transition:transform .22s cubic-bezier(.34,1.56,.64,1),filter .2s}
+.bar-3d:hover{transform:translateY(-8px) translateX(2px) scale(1.05);filter:brightness(1.18);z-index:300 !important}
+.bar-cap{width:100%;height:16px;background:var(--c);border-radius:50%;border:2px solid var(--c);box-shadow:inset 0 -3px 6px rgba(0,0,0,.25),0 1px 0 rgba(255,255,255,.25);position:relative;z-index:2}
+.bar-body{width:100%;background:#fff;border-left:3px solid var(--c);border-right:3px solid var(--c);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 2px 8px;position:relative;z-index:1;min-height:60px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.bar-foot{width:100%;height:16px;background:var(--c);border-radius:50%;margin-top:-8px;filter:brightness(.72);border:2px solid var(--c);box-shadow:0 6px 12px rgba(0,0,0,.35);position:relative;z-index:0}
+.date-label{margin-top:10px;font-size:10px;font-weight:800;color:#cbd5e1;white-space:nowrap;background:#1f2533;border:1px solid #2a3449;padding:2px 6px;border-radius:999px}
+.val{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;line-height:1;font-weight:900}
+.val.price{font-size:12px;color:#111}
+.val.diff{font-size:10px;margin-top:6px;padding:2px 4px;border-radius:5px;font-weight:800}
+.val.diff.up{color:#065f46;background:#d1fae5}.val.diff.down{color:#991b1b;background:#fee2e2}.val.diff.flat{color:#374151;background:#f3f4f6}
+.tooltip{position:fixed;pointer-events:none;z-index:9999;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.5;min-width:190px;box-shadow:0 12px 32px rgba(0,0,0,.6);transform:translate(-50%,-115%);opacity:0;transition:opacity .15s,transform .15s;white-space:nowrap}
+.tooltip.show{opacity:1;transform:translate(-50%,-120%)}
+.print-panel{background:#10131a;border:1px dashed #334155;border-radius:14px;padding:14px;max-width:1120px;margin:18px auto 0}
+.print-panel h3{font-size:13px;font-weight:800;color:#fff;margin-bottom:8px}
+.check-row{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0}
+.check-row label{display:flex;align-items:center;gap:6px;background:#1a1e2a;border:1px solid #2a3449;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+@media print{body{background:#0f1115;color:#e5e7eb} .no-print{display:none}}
+
+.quick-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+
+
+/* --- Prev box kuning/merah --- */
+.prev-box{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;white-space:nowrap;margin-bottom:4px;border:1px solid;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.prev-box.up{background:rgba(234,179,8,0.18);border-color:#eab308;color:#fde047}
+.prev-box.down{background:rgba(239,68,68,0.18);border-color:#ef4444;color:#fecaca}
+.prev-box.flat{background:rgba(100,116,139,0.18);border-color:#64748b;color:#cbd5e1}
+/* --- Date label fix biar tidak ketutup ekor --- */
+.date-label{margin-top:18px !important;position:relative !important;z-index:20 !important;background:#1f2533 !important;border:1px solid #2a3449 !important;padding:4px 10px !important;border-radius:999px !important;font-size:11px !important;font-weight:800 !important;color:#e2e8f0 !important;box-shadow:0 2px 8px rgba(0,0,0,0.4) !important;display:inline-block !important}
+.cluster-bars{padding-bottom:8px !important}
+.bars{padding-bottom:40px !important}
+.chart-body{padding-bottom:12px !important;overflow:visible !important}
+.chart-scroll{padding-bottom:16px !important}
+/* --- Titik berwarna di Bagian 2 lebih tegas --- */
+.card-label span{width:12px !important;height:12px !important;border-radius:3px !important;box-shadow:0 0 6px var(--accent, currentColor) !important}
+/* CATATAN: sempat dicoba bikin .prev-box melayang absolut di atas bar (top:-34px) biar
+   lebih mencolok, tapi itu penyebab bar saling tabrak & tanggal ketutup - bar cuma
+   digeser 14px sementara kotak label bisa selebar 110px. Dikembalikan ke desain AMAN:
+   .prev-box tetap di dalam kolom bar-nya sendiri (flex, bukan absolute), jadi TIDAK
+   PERNAH nabrak bar/tanggal tetangga walau berapa pun mata uang dipilih. */
+
+    .card-label{position:relative !important; z-index:3 !important}
+    .card-label span{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; display:inline-block !important; width:12px !important; height:12px !important; border-radius:3px !important; background:var(--accent,#f59e0b) !important; box-shadow:0 0 6px var(--accent) !important; }
+
+/* --- Bagian 5: toolbar index (tanggal/nilai selisih/persentase) + header ticker yg bisa diklik --- */
+.index-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;background:#12151e;border-bottom:1px solid #242a38}
+.index-label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#9ca3af}
+.index-mode{display:flex;flex-wrap:wrap;gap:6px}
+.index-btn{background:#1f2533;border:1px solid #2e364a;color:#cbd5e1;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.index-btn:hover{filter:brightness(1.12)}
+.index-btn.active{background:#f59e0b;color:#111;border-color:#f59e0b}
+.index-currency{background:#0f1219;border:1px solid #2a3142;color:#e5e7eb;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;outline:none;min-width:100px}
+.index-hint{font-size:10px;color:#64748b}
+#part-5 th.index-sortable{cursor:pointer}
+#part-5 th.index-sortable:hover{filter:brightness(1.15)}
+#part-5 th.index-active{box-shadow:inset 0 -3px 0 #f59e0b}
+</style>
+</head>
+<body>
+<h1>Kurs 3D Box Berjenjang - Today di kiri, terlama di kanan. Nilai di dalam bar + selisih vs kemarin (▲ naik / ▼ turun) - IDR base</h1>
+<div id="subtitle" class="subtitle">Memuat live data…</div>
+
+<div id="part-1" class="collapsible">
+  <div class="part-head no-toggle"><h2>🔍 Bagian 1 - Filter & Pencarian <small id="filterInfo"></small></h2></div>
+  <div class="filter-always">
+    <div class="panel-row">
+      <div class="field"><label>START</label><input type="date" id="startDate"></div>
+      <div class="field"><label>AKHIR</label><input type="date" id="endDate"></div>
+      <div class="search-wrap">
+        <label>SEARCH CURRENCY (<span id="tickerCountAll"></span> ticker lengkap)</label>
+        <div class="search-inner"><input type="text" id="searchInput" placeholder="Cari USD, SGD, JPY..."><button id="clearSearch" class="clear-btn">✕</button></div>
+      </div>
+    </div>
+    <div id="quickBtns" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0"></div>
+  </div>
+  <div id="bank-collapse" class="collapsible">
+    <div class="part-head" onclick="togglePart('bank-collapse')"><h2>💼 Pilihan Mata Uang <small id="bankCollapseInfo"></small></h2><span class="toggle-icon">▼</span></div>
+    <div class="part-body">
+      <div class="bank-grid" id="bankGrid"></div>
+      <div class="actions">
+        <button class="abtn primary" id="btnFilter">Filter Tanggal</button>
+        <button class="abtn" id="btnReset">Reset Tanggal</button>
+        <button class="abtn" id="btnAll"></button>
+        <button class="abtn" id="btnNone">Kosongkan</button>
+      </div>
+      <small style="color:#64748b;display:block;margin-top:8px">Bagian 1 = pusat kontrol (filter tanggal + pilihan mata uang). Semua bagian di bawah baca dari sini, semua terbuka default — collapse cuma kalau diklik manual.</small>
+    </div>
+  </div>
+</div>
+
+<div id="part-2" class="collapsible">
+  <div class="part-head" onclick="togglePart('part-2')"><h2>📊 Bagian 2 - Statistik <small id="rangeInfo"></small></h2><span class="toggle-icon">▼</span></div>
+  <div class="part-body">
+    <div id="quickBtns2" class="quick-row"></div>
+    <div id="stats" class="stats"></div></div>
+</div>
+
+<div id="part-3" class="collapsible">
+  <div class="part-head" onclick="togglePart('part-3')"><h2>📈 Bagian 3 - Grafik 3D Berjenjang <small id="chartRangeInfo"></small></h2><span class="toggle-icon">▼</span></div>
+  <div class="part-body">
+    <div id="quickBtns3" class="quick-row"></div>
+    <div class="chart-wrap">
+      <div class="chart-head"><h3 id="chartTitle">Grafik</h3><small>Today kiri → terlama kanan • Warna sinkron Bagian 2 • ▲ naik ▼ turun</small></div>
+      <div class="chart-legend" id="chartLegend"></div>
+      <div class="chart-body">
+        <div class="y-axis" id="yAxis"></div>
+        <div class="chart-scroll" id="chartScroll"><div class="bars" id="bars"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="part-4" class="collapsible">
+  <div class="part-head" onclick="togglePart('part-4')"><h2>📋 Bagian 4 - Tabel Historis + Selisih <small id="tableRangeInfo"></small></h2><span class="toggle-icon">▼</span></div>
+  <div class="part-body">
+    <div id="quickBtns4" class="quick-row"></div>
+    <div class="table-wrap">
+      <div class="table-head"><h3>Tabel (Today first) - Auto Panjang - Header warna sesuai Bagian 2 & 3</h3><small id="tableInfo" style="color:#9ca3af;font-size:11px"></small></div>
+      <div class="table-scroll" id="tableScroll"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div id="part-5" class="collapsible">
+  <div class="part-head" onclick="togglePart('part-5')"><h2>🔢 Bagian 5 - Tabel Historis + Selisih • Index <small id="table5RangeInfo"></small></h2><span class="toggle-icon">▼</span></div>
+  <div class="part-body">
+    <div id="quickBtns5" class="quick-row"></div>
+    <div class="table-wrap">
+      <div class="index-toolbar">
+        <span class="index-label">INDEX BY</span>
+        <div class="index-mode" id="indexModeButtons">
+          <button type="button" class="index-btn active" data-mode="date">Tanggal</button>
+          <button type="button" class="index-btn" data-mode="diff">Nilai Selisih</button>
+          <button type="button" class="index-btn" data-mode="pct">Persentase</button>
+        </div>
+        <span class="index-label">MATA UANG</span>
+        <select id="indexTickerSelect" class="index-currency"></select>
+        <span class="index-hint">atau klik langsung header mata uang di tabel di bawah</span>
+      </div>
+      <div class="table-head"><h3 id="table5Title">Tabel Index • Tanggal (default)</h3><small id="table5Info" style="color:#9ca3af;font-size:11px"></small></div>
+      <div class="table-scroll" id="table5Scroll"><table><thead id="thead5"></thead><tbody id="tbody5"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<div class="print-panel no-print">
+  <h3>📸 Export JPG/PNG - Auto Panjang (V6 Fixed Clone)</h3>
+  <div class="check-row">
+    <label><input type="checkbox" id="print2" checked> Bagian 2 - Statistik</label>
+    <label><input type="checkbox" id="print3" checked> Bagian 3 - Grafik 3D</label>
+    <label><input type="checkbox" id="print4" checked> Bagian 4 - Tabel</label>
+    <label><input type="checkbox" id="print5" checked> Bagian 5 - Tabel Index</label>
+  </div>
+  <div class="actions">
+    <button class="abtn primary" onclick="exportImage('png')">📷 Export PNG (HD) - Fixed Angka Tegak</button>
+    <button class="abtn" onclick="exportImage('jpg')">🖼️ Export JPG</button>
+    <button class="abtn" onclick="doPrint()">🖨️ Print / PDF (Ctrl+P)</button>
+    <button class="abtn" onclick="selectAllPrint(true)">Pilih Semua</button>
+  </div>
+  <small style="color:#64748b;display:block;margin-top:8px">V7: Selisih selalu harian (no aggregasi minggu/bulan) di semua bagian, legend warna di Grafik 3D, print Bagian 3 wrap ke baris baru, print window auto-close, tanpa data dummy/sintetis (fallback = pesan error jujur), load awal sekarang beneran ikut range default "1 Bulan" (dulu ketauan gak sinkron), export JPG/PNG gambar langsung dari data (canvas 2D primitif, nol library, nol capture-DOM) + progress bar asli. + Bagian 5: tabel historis yang bisa di-index (tanggal/nilai selisih/persentase) per mata uang, klik header atau pilih dari toolbar.</small>
+</div>
+
+<script>
+/* =====================================================================
+   ARSITEKTUR FILE INI — baca sebelum edit / nambah Bagian baru
+   ---------------------------------------------------------------------
+   - CORE STATE (di bawah) = SATU-SATUNYA sumber data: allData, filtered,
+     selected, TICKERS, CURR_COLORS. Bagian 1 (filter tanggal + pilihan
+     mata uang) yang mengubah state ini; Bagian 2/3/4/5+ HANYA membaca &
+     render dari state yang sama, tidak pernah simpan salinan sendiri.
+   - Alur: user ubah filter/pilihan mata uang di Bagian 1 -> applyFilter()
+     atau checkbox handler -> renderAll() -> semua bagian re-render dari
+     `filtered` + `selected` yang sama. Jadi otomatis sinkron.
+   - Selisih (naik/turun) SELALU dihitung antar hari berdampingan
+     (trading day berurutan di `filtered`), TIDAK PERNAH diagregasi ke
+     minggu/bulan — dilarang keras ada fungsi seperti aggregateIfNeeded.
+   - Urutan tampil: Today paling kiri/atas, mundur ke masa lalu ke
+     kanan/bawah (data disimpan ascending, dibalik cuma saat render).
+   - Warna mata uang: SELALU lewat colorOf(ticker) (CURR_COLORS + fallback
+     hashColor) — dipakai di bank-grid, kartu statistik, bar grafik,
+     header tabel, DAN legend grafik. Jangan pernah hardcode warna baru.
+   - TIDAK ADA library eksternal sama sekali (html2canvas sudah dicabut). Export
+     JPG/PNG gambar LANGSUNG dari data pakai Canvas 2D primitif (exDrawStats/
+     exDrawChart/exDrawTable) — BUKAN capture/rasterize DOM (itu yang bikin
+     masalah: html2canvas timeout, SVG-foreignObject taint canvas di Firefox).
+     Kalau kepepet BENERAN butuh library baru nanti, itu pengecualian, bukan
+     default — cek dulu apa bisa vanilla sebelum nambah <script src> baru.
+   - Render Bagian 3/4 yang berat (data*ticker > HEAVY_RENDER_THRESHOLD) otomatis
+     jalan ter-chunk + progress overlay asli (bukan pura-pura) via renderAll().
+     Kalau nambah Bagian baru yang berat juga, ikuti pola showProgress/setProgress/
+     hideProgress/yieldUI yang sudah ada, jangan bikin overlay baru dari nol.
+   - TIDAK ADA data dummy/sintetis di manapun. Kalau fetch gagal ->
+     tampilkan pesan error jujur (showFetchError), jangan pernah
+     render angka karangan sebagai pengganti data live.
+   - Nambah Bagian baru (mis. Bagian 5): (1) tambah render function di
+     grup BAGIAN-nya sendiri, (2) daftarkan di renderAll(), (3) tambah
+     blok HTML + checkbox print baru ikut pola Bagian 2-4, (4) kalau
+     section-nya bisa di-collapse, ikut pola togglePart().
+   ===================================================================== */
+const TICKERS=["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP", "CNH", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HTG", "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SOS", "SRD", "SSP", "STN", "SVC", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES", "VND", "VUV", "WST", "XAF", "XAG", "XAU", "XCD", "XCG", "XDR", "XOF", "XPD", "XPF", "XPT", "YER", "ZAR", "ZMW", "ZWG"];
+const DEFAULT_CHECKED=["USD","SGD","JPY","AUD","EUR","CHF"];
+/* Satu sumber kebenaran utk quick-range — dipakai baik oleh tombol maupun oleh load
+   pertama kali, supaya tombol yang kelihatan "aktif" SELALU sama dengan data yang
+   BENERAN ditampilkan (bug sebelumnya: "1 Bulan" kelihatan aktif tapi datanya full
+   5 tahun, krn load awal gak pernah benar2 manggil filter 1 bulan-nya). */
+const QUICK_RANGES={"1 Minggu":7,"2 Minggu":14,"1 Bulan":30,"3 Bulan":90,"6 Bulan":180,"1 Tahun":365,"2 Tahun":730,"5 Tahun":1825};
+const DEFAULT_QUICK_KEY="1 Bulan";
+const EARLIEST_DATE = "2024-03-02";
+const $=id=>document.getElementById(id);
+/* allData = SEMUA data dari data.json, ascending (lama->baru), tidak pernah diagregasi.
+   filtered = subset allData sesuai tanggal yang aktif, ascending juga, tidak pernah diagregasi.
+   selected = {TICKER:true/false} status centang, sumber kebenaran utk semua bagian.
+   Reversal ke "Today kiri" HANYA dilakukan saat render (lihat renderBars/renderTable). */
+let allData=[],filtered=[],selected={},focus="BBCA",fetchRetries=0;
+
+/* Warna per mata uang — dipakai SEMUA bagian (grid, kartu, bar, tabel, legend). Extend di sini kalau perlu warna manual baru; ticker yang belum terdaftar otomatis dapat warna dari hashColor(). */
+const CURR_COLORS={
+"AED":"#DF3E3E",
+"AFN":"#44E774",
+"ALL":"#AB4CEF",
+"AMD":"#F6E255",
+"ANG":"#72D4E8",
+"AOA":"#E63795",
+"ARS":"#6AEE3E",
+"AUD":"#4E46F5",
+"AWG":"#E69065",
+"AZN":"#6DEDBD",
+"BAM":"#DD30ED",
+"BBD":"#CDF438",
+"BDT":"#589DE3",
+"BGN":"#EB607C",
+"BHD":"#68F174",
+"BIF":"#7529F3",
+"BMD":"#E1AF4B",
+"BND":"#52E9E3",
+"BOB":"#F05ACA",
+"BRL":"#A6F663",
+"BSD":"#3E58DF",
+"BTN":"#E75944",
+"BWP":"#4CEF91",
+"BYN":"#C755F6",
+"BZD":"#E7E872",
+"CAD":"#37B2E6",
+"CDF":"#EE3E87",
+"CHF":"#5CF546",
+"CLP":"#7B65E6",
+"CNH":"#EDA86D",
+"CNY":"#30EDBE",
+"COP":"#F438EB",
+"CRC":"#B4E358",
+"CUP":"#6093EB",
+"CVE":"#F16873",
+"CZK":"#29F354",
+"DJF":"#974BE1",
+"DKK":"#E9CA52",
+"DOP":"#5AE3F0",
+"DZD":"#F663BE",
+"EGP":"#73DF3E",
+"ERN":"#444AE7",
+"ETB":"#EF764C",
+"EUR":"#55F6AD",
+"FJD":"#D572E8",
+"FKP":"#CFE637",
+"GBP":"#3EA4EE",
+"GEL":"#F54678",
+"GGP":"#65E666",
+"GHS":"#936DED",
+"GIP":"#ED9F30",
+"GMD":"#38F4DE",
+"GNF":"#E358CB",
+"GTQ":"#AAEB60",
+"GYD":"#688AF1",
+"HKD":"#F33329",
+"HNL":"#4BE17E",
+"HTG":"#B252E9",
+"HUF":"#F0E55A",
+"IDR":"#63D7F6",
+"ILS":"#DF3E8D",
+"IMP":"#65E744",
+"INR":"#5B4CEF",
+"IQD":"#F69355",
+"IRR":"#72E8C1",
+"ISK":"#E037E6",
+"JEP":"#C0EE3E",
+"JMD":"#4695F5",
+"JOD":"#E66579",
+"JPY":"#6DED7E",
+"KES":"#8030ED",
+"KGS":"#F4BF38",
+"KHR":"#58E2E3",
+"KMF":"#EB60C1",
+"KPW":"#A0F168",
+"KRW":"#2941F3",
+"KWD":"#E1654B",
+"KYD":"#52E999",
+"KZT":"#CC5AF0",
+"LAK":"#EFF663",
+"LBP":"#3EA8DF",
+"LKR":"#E74480",
+"LRD":"#58EF4C",
+"LSL":"#7855F6",
+"LYD":"#E8AE72",
+"MAD":"#37E6C3",
+"MDL":"#EE3EDD",
+"MGA":"#B1F546",
+"MKD":"#658EE6",
+"MMK":"#ED6D71",
+"MNT":"#30ED61",
+"MOP":"#A038F4",
+"MRO":"#E3CE58",
+"MRU":"#60D8EB",
+"MUR":"#F168B7",
+"MVR":"#62F329",
+"MWK":"#4D4BE1",
+"MXN":"#E98052",
+"MYR":"#5AF0B4",
+"MZN":"#E663F6",
+"NAD":"#C2DF3E",
+"NGN":"#449BE7",
+"NIO":"#EF4C73",
+"NOK":"#55F65E",
+"NPR":"#9B72E8",
+"NZD":"#E6A737",
+"OMR":"#3EEEE2",
+"PAB":"#F546CE",
+"PEN":"#A3E665",
+"PGK":"#6D86ED",
+"PHP":"#ED4330",
+"PKR":"#38F481",
+"PLN":"#B758E3",
+"PYG":"#EBE760",
+"QAR":"#68CDF1",
+"RON":"#F32983",
+"RSD":"#61E14B",
+"RUB":"#6752E9",
+"RWF":"#F09B5A",
+"SAR":"#63F6CE",
+"SBD":"#DF3EDC",
+"SCR":"#B5E744",
+"SDG":"#4C8DEF",
+"SEK":"#F65566",
+"SGD":"#72E888",
+"SHP":"#8A37E6",
+"SLE":"#EEC53E",
+"SOS":"#46EBF5",
+"SRD":"#E665B8",
+"SSP":"#9BED6D",
+"STN":"#303CED",
+"SVC":"#F46238",
+"SYP":"#58E3A0",
+"SZL":"#D060EB",
+"THB":"#E4F168",
+"TJS":"#29A4F3",
+"TMT":"#E14B7A",
+"TND":"#56E952",
+"TOP":"#835AF0",
+"TRY":"#F6B663",
+"TTD":"#3EDFC7",
+"TWD":"#E744D0",
+"TZS":"#A8EF4C",
+"UAH":"#5581F6",
+"UGX":"#E87472",
+"USD":"#37E66D",
+"UYU":"#A83EEE",
+"UZS":"#F5E246",
+"VES":"#65CEE6",
+"VND":"#ED6DB0",
+"VUV":"#5BED30",
+"WST":"#4338F4",
+"XAF":"#E38958",
+"XAG":"#60EBB9",
+"XAU":"#E968F1",
+"XCD":"#C5F329",
+"XCG":"#4B93E1",
+"XDR":"#E9526E",
+"XOF":"#5AF06A",
+"XPD":"#9E63F6",
+"XPF":"#DFAD3E",
+"XPT":"#44E7E4",
+"YER":"#EF4CC3",
+"ZAR":"#9BF655",
+"ZMW":"#7283E8",
+"ZWG":"#E65137"
+};
+
+function hashColor(str){
+  let h=0; for(let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0; }
+  const hue=Math.abs(h)%360;
+  const sat=75 + (Math.abs(h)%20);
+  const lig=55 + (Math.abs(h>>3)%15);
+  return `hsl(${hue},${sat}%,${lig}%)`;
+}
+function colorOf(t){ return CURR_COLORS[t] || hashColor(t); }
+
+function fmtNum(n){ return typeof n==="number"&&!isNaN(n)? n.toLocaleString("id-ID"):"-"; }
+function fmtDateISO(d){ return d.toISOString().slice(0,10); }
+function fmtDateID(dStr){ try{ const d=new Date(dStr); return String(d.getDate()).padStart(2,'0')+"/"+String(d.getMonth()+1).padStart(2,'0')+"/"+d.getFullYear(); }catch(e){ return dStr; } }
+function parseDate(s){ const d=new Date(s); return isNaN(d)?null:d; }
+function getSel(){ return Object.keys(selected).filter(k=>selected[k]); }
+function togglePart(id){ $(id).classList.toggle('collapsed'); }
+
+function normalizeData(json){
+  let arr=[]; if(Array.isArray(json)) arr=json; else if(json&&Array.isArray(json.history)) arr=json.history.map(h=>({date:h.dateStr||h.date,...h.prices})); else arr=Object.values(json);
+  const out=[]; arr.forEach(o=>{ if(!o.date) return; const d=o.date.slice(0,10); const obj={date:d}; TICKERS.forEach(t=>{ if(typeof o[t]==="number") obj[t]=o[t]; }); Object.keys(o).forEach(k=>{ if(TICKERS.includes(k)&&typeof o[k]==="number") obj[k]=o[k]; }); out.push(obj); });
+  const dedup={}; out.forEach(o=>{ dedup[o.date]=Object.assign({},dedup[o.date]||{},o); });
+  return Object.values(dedup).sort((a,b)=> new Date(a.date)-new Date(b.date));
+}
+/* CATATAN: TIDAK ADA fungsi agregasi mingguan/bulanan di file ini, sengaja.
+   `filtered` di applyFilter()/fetchData() SELALU per-hari mentah apa adanya,
+   utk range berapa pun (1 Minggu s/d 5 Tahun) — supaya Selisih di Bagian 2/3/4
+   selalu perbandingan hari-ke-hari yang benar, bukan hari-vs-minggu-lalu yang
+   menyesatkan. Kalau butuh windowing tampilan (bukan agregasi data), itu HARUS
+   berupa "tampilkan N hari terakhir dari data asli", bukan menggabung nilai. */
+function initChecklist(){ TICKERS.forEach(t=>selected[t]=DEFAULT_CHECKED.includes(t)); }
+
+/* ============================= BAGIAN 1 =============================
+   Filter tanggal, quick-range, search & pilihan mata uang — kontrol pusat.
+   ===================================================================== */
+function applyQuickRange(k){
+  if(!allData.length) return;
+  syncQuickActive(k);
+  const end=new Date(allData[allData.length-1].date);
+  const start=new Date(end); start.setDate(end.getDate()-QUICK_RANGES[k]);
+  $("startDate").value=fmtDateISO(start); $("endDate").value=fmtDateISO(end);
+  applyFilter();
+}
+function renderQuick(){
+  const ids=["quickBtns","quickBtns2","quickBtns3","quickBtns4","quickBtns5"];
+  ids.forEach(id=>{
+    const wrap=$(id); if(!wrap) return; wrap.innerHTML="";
+    Object.keys(QUICK_RANGES).forEach(k=>{
+      const b=document.createElement("button"); b.className="qbtn"+(k===DEFAULT_QUICK_KEY?" active":""); b.textContent=k; b.dataset.range=k;
+      b.addEventListener("click",()=>applyQuickRange(k));
+      wrap.appendChild(b);
+    });
+  });
+}
+
+function renderCurrGrid(){
+  const grid=$("bankGrid"); const q=$("searchInput").value.toLowerCase().trim(); grid.innerHTML="";
+  const list=TICKERS.filter(t=>{ if(q&&!t.toLowerCase().includes(q)) return false; return true; });
+  list.forEach(t=>{
+    const col=colorOf(t);
+    const label=document.createElement("label");
+    label.className="bank-item"+(selected[t]?" checked":"");
+    label.style.setProperty("--bcol", col);
+    if(selected[t]) label.style.borderColor=col;
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=!!selected[t]; cb.style.accentColor=col;
+    cb.addEventListener("change",()=>{
+      selected[t]=cb.checked;
+      if(cb.checked) focus=t;
+      renderAll();
+      label.classList.toggle("checked",cb.checked);
+      label.style.borderColor=cb.checked?col:"#262e40";
+    });
+    const dot=document.createElement("span"); dot.className="bank-dot"; dot.style.background=col;
+    const span=document.createElement("span"); span.textContent=t;
+    label.appendChild(cb); label.appendChild(dot); label.appendChild(span);
+    grid.appendChild(label);
+  });
+  $("filterInfo").textContent=list.length+" dari "+TICKERS.length+" ticker • collapse via header";
+  $("tickerCountAll").textContent=TICKERS.length;
+  $("bankCollapseInfo").textContent=TICKERS.length+" ticker • klik header untuk collapse";
+  $("btnAll").textContent="Pilih Semua ("+TICKERS.length+")";
+}
+/* ============================= BAGIAN 2 =============================
+   Statistik — MAX/MIN/AVG/FREQ + detail hari naik/turun per mata uang.
+   ===================================================================== */
+/* Hitung berapa hari mata uang `t` naik/turun/flat, dihitung ANTAR HARI
+   berdampingan sepanjang `filtered` (bukan minggu/bulan — lihat catatan
+   di atas normalizeData). Baris pertama tidak punya pembanding, jadi
+   total up+down+flat = filtered.length-1 (kalau data lengkap tanpa gap). */
+function computeUpDown(t){
+  let up=0,down=0,flat=0;
+  for(let i=1;i<filtered.length;i++){
+    const prev=filtered[i-1][t], cur=filtered[i][t];
+    if(typeof prev!=="number"||typeof cur!=="number") continue;
+    const diff=cur-prev;
+    if(diff>0) up++; else if(diff<0) down++; else flat++;
+  }
+  return {up,down,flat};
+}
+function renderStats(){
+  const sel=getSel(); const stats=$("stats"); stats.innerHTML="";
+  const rangeTxt=filtered.length? `${fmtDateID(filtered[0].date)} s/d ${fmtDateID(filtered[filtered.length-1].date)} • ${filtered.length} hari • Today kiri` : "-";
+  $("rangeInfo").textContent="| "+rangeTxt; $("chartRangeInfo").textContent=rangeTxt; $("tableRangeInfo").textContent=rangeTxt; $("table5RangeInfo").textContent=rangeTxt;
+  if(!allData.length){ stats.innerHTML='<div class="card">Data belum termuat. Lihat pesan di atas ⬆️</div>'; stats.className="stats"; return; }
+  if(!filtered.length||!sel.length){ stats.innerHTML='<div class="card">Pilih ticker dulu Bro</div>'; stats.className="stats"; return; }
+  if(sel.length===1){
+    stats.className="stats"; const t=sel[0]; const vals=filtered.map(r=>r[t]).filter(v=>typeof v==="number"); if(!vals.length){ stats.innerHTML='<div class="card">No data '+t+'</div>'; return; }
+    const max=Math.max(...vals), min=Math.min(...vals), avg=vals.reduce((a,b)=>a+b,0)/vals.length; const col=colorOf(t);
+    const ud=computeUpDown(t);
+    stats.innerHTML='<div class="card max" style="--accent:'+col+'"><div class="card-label"><span style="width:10px;height:10px;border-radius:3px;background:'+col+';display:inline-block"></span>MAX - '+t+'</div><div class="card-value">Rp '+fmtNum(max)+'</div><div class="card-sub">'+rangeTxt+'</div></div><div class="card min" style="--accent:'+col+'"><div class="card-label"><span style="width:10px;height:10px;border-radius:3px;background:'+col+';display:inline-block"></span>MIN - '+t+'</div><div class="card-value">Rp '+fmtNum(min)+'</div><div class="card-sub">Terendah • '+t+'</div></div><div class="card avg" style="--accent:'+col+'"><div class="card-label"><span style="width:10px;height:10px;border-radius:3px;background:'+col+';display:inline-block"></span>AVG - '+t+'</div><div class="card-value">Rp '+fmtNum(Math.round(avg))+'</div><div class="card-sub">Rata-rata</div></div><div class="card freq" style="--accent:'+col+'"><div class="card-label"><span style="width:10px;height:10px;border-radius:3px;background:'+col+';display:inline-block"></span>FREQ - '+t+'</div><div class="card-value">'+vals.length+' Hari</div><div class="card-sub">'+filtered.length+' poin</div></div><div class="card ud" style="--accent:'+col+'"><div class="card-label"><span style="width:10px;height:10px;border-radius:3px;background:'+col+';display:inline-block"></span>NAIK/TURUN - '+t+'</div><div class="card-value"><span style="color:#10b981">▲ '+ud.up+'</span> <span style="color:#ef4444">▼ '+ud.down+'</span></div><div class="card-sub">'+(ud.up+ud.down+ud.flat)+' hari dibandingkan'+(ud.flat?' • '+ud.flat+' flat':'')+'</div></div>';
+  }else{
+    stats.className="stats multi"; sel.forEach(t=>{ const vals=filtered.map(r=>r[t]).filter(v=>typeof v==="number"); if(!vals.length) return; const max=Math.max(...vals), min=Math.min(...vals), avg=vals.reduce((a,b)=>a+b,0)/vals.length; const col=colorOf(t); const ud=computeUpDown(t); const card=document.createElement("div"); card.className="card"; card.style.setProperty("--accent",col); card.innerHTML='<div class="card-label"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+col+'"></span>'+t+' • '+vals.length+' hari</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div><div style="font-size:9px;color:#9ca3af">MAX</div><div style="font-weight:800;color:#fff">Rp '+fmtNum(max)+'</div></div><div><div style="font-size:9px;color:#9ca3af">MIN</div><div style="font-weight:800;color:#fff">Rp '+fmtNum(min)+'</div></div><div><div style="font-size:9px;color:#9ca3af">AVG</div><div style="font-weight:800;color:#fff">Rp '+fmtNum(Math.round(avg))+'</div></div><div><div style="font-size:9px;color:#9ca3af">FREQ</div><div style="font-weight:800;color:#fff">'+vals.length+'</div></div></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid #262b36;font-size:12px;font-weight:800">▲ <span style="color:#10b981">'+ud.up+' hari</span> <span style="color:#4b5563;font-weight:400">·</span> ▼ <span style="color:#ef4444">'+ud.down+' hari</span></div><div style="font-size:9px;color:#64748b;margin-top:6px">'+fmtDateID(filtered[0].date)+' s/d '+fmtDateID(filtered[filtered.length-1].date)+'</div>'; stats.appendChild(card); });
+  }
+}
+/* ============================= BAGIAN 3 =============================
+   Grafik 3D Berjenjang — legend + batang, Today di kiri.
+   ===================================================================== */
+function renderChartLegend(sel){
+  const legend=$("chartLegend"); legend.innerHTML="";
+  sel.forEach(t=>{
+    const item=document.createElement("span"); item.className="legend-item";
+    const dot=document.createElement("span"); dot.className="legend-dot"; dot.style.background=colorOf(t);
+    item.appendChild(dot); item.appendChild(document.createTextNode(t));
+    legend.appendChild(item);
+  });
+}
+function renderYAxis(min,max){ const y=$("yAxis"); y.innerHTML=""; const steps=5; for(let i=steps;i>=0;i--){ const v=min+(max-min)*i/steps; const sp=document.createElement("span"); sp.textContent=fmtNum(Math.round(v)); y.appendChild(sp); } }
+async function renderBars(onProgress){
+  const bars=$("bars"), tooltip=$("tooltip"); bars.innerHTML=""; const sel=getSel();
+  renderChartLegend(sel);
+  if(!filtered.length){ bars.innerHTML='<div class="loading">Tidak ada data</div>'; $("yAxis").innerHTML=""; return; }
+  if(!sel.length){ bars.innerHTML='<div class="loading">Centang minimal 1 ticker Bro</div>'; $("yAxis").innerHTML=""; return; }
+  let allVals=[]; filtered.forEach(r=>{ sel.forEach(t=>{ if(typeof r[t]==="number") allVals.push(r[t]); }); });
+  if(!allVals.length){ bars.innerHTML='<div class="loading">Ticker tidak ada di rentang</div>'; return; }
+  let min=Math.min(...allVals), max=Math.max(...allVals), range=max-min||1; min=min-range*0.08; max=max+range*0.08; range=max-min; renderYAxis(min,max);
+  const offsetX=14, barW=54;
+  const frag=document.createDocumentFragment();
+  for(let chronIdx=filtered.length-1; chronIdx>=0; chronIdx--){
+    const row=filtered[chronIdx];
+    let prevRow=chronIdx>0?filtered[chronIdx-1]:null;
+    if(!prevRow){ const allIdx=allData.findIndex(r=>r.date===row.date); if(allIdx>0) prevRow=allData[allIdx-1]; }
+    const cluster=document.createElement("div"); cluster.className="date-cluster"; const clusterBars=document.createElement("div"); clusterBars.className="cluster-bars"; const clusterWidth=barW+Math.max(0,sel.length-1)*offsetX; clusterBars.style.width=clusterWidth+"px"; cluster.style.width=clusterWidth+"px";
+    sel.forEach((ticker,i)=>{
+      const price=row[ticker]; if(typeof price!=="number") return;
+      const prevPrice=prevRow&&typeof prevRow[ticker]==="number"?prevRow[ticker]:null;
+      const diff=prevPrice!=null?price-prevPrice:0;
+      const diffPct=prevPrice!=null&&prevPrice!==0?diff/prevPrice*100:0;
+      const col=colorOf(ticker);
+      const hPx=((price-min)/range)*300+50;
+      const wrap=document.createElement("div"); wrap.className="bar-3d"; wrap.style.setProperty("--c",col); wrap.style.height=hPx+"px"; wrap.style.left=(i*offsetX)+"px"; wrap.style.zIndex=String(200-i);
+      const cap=document.createElement("div"); cap.className="bar-cap";
+      const body=document.createElement("div"); body.className="bar-body"; body.style.height=(hPx-18)+"px";
+      // Prev label kotak - di atas bar
+      let prevBox=null;
+      if(prevPrice!=null){
+        prevBox=document.createElement("div");
+        prevBox.className="prev-box "+(diff>0?"up":diff<0?"down":"flat");
+        prevBox.textContent="Prev Rp"+fmtNum(prevPrice);
+      }
+      const priceEl=document.createElement("div"); priceEl.className="val price"; priceEl.textContent="Rp"+fmtNum(price);
+      const diffEl=document.createElement("div"); diffEl.className="val diff "+(diff>0?"up":diff<0?"down":"flat");
+      const arrow=diff>0?"▲":diff<0?"▼":"•";
+      diffEl.textContent=prevPrice==null?"•0":arrow+fmtNum(Math.abs(Math.round(diff)))+" ("+(diffPct>=0?"+":"")+diffPct.toFixed(2)+"%)";
+      body.appendChild(priceEl); body.appendChild(diffEl);
+      const foot=document.createElement("div"); foot.className="bar-foot";
+      if(prevBox) wrap.appendChild(prevBox);
+      wrap.appendChild(cap); wrap.appendChild(body); wrap.appendChild(foot);
+      function showTip(){
+        const up=diff>0, down=diff<0;
+        tooltip.innerHTML='<div style="font-size:11px;color:#94a3b8">'+fmtDateID(row.date)+' '+(chronIdx===filtered.length-1?"• Today":"")+'</div><div style="display:flex;align-items:center;gap:6px;font-weight:900;margin:4px 0"><span style="width:10px;height:10px;border-radius:3px;background:'+col+'"></span>'+ticker+' Rp '+fmtNum(price)+'</div>'+(prevPrice!=null?'<div style="display:flex;gap:6px;align-items:center"><span style="color:'+(up?'#10b981':down?'#ef4444':'#9ca3af')+';font-weight:800">'+arrow+' Rp '+fmtNum(Math.abs(Math.round(diff)))+'</span><span style="background:'+(up?'rgba(16,185,129,.15)':down?'rgba(239,68,68,.15)':'#1f2533')+';color:'+(up?'#10b981':down?'#ef4444':'#9ca3af')+';padding:2px 6px;border-radius:999px;font-weight:800;font-size:11px">'+(diffPct>=0?'+':'')+diffPct.toFixed(2)+'%</span></div><div style="font-size:10px;color:#64748b;margin-top:3px">Prev: Rp '+fmtNum(prevPrice)+'</div>':'<div style="font-size:11px;color:#9ca3af">Data pertama dalam rentang</div>');
+        const rect=wrap.getBoundingClientRect(); tooltip.style.left=(rect.left+rect.width/2)+"px"; tooltip.style.top=(rect.top-8)+"px"; tooltip.classList.add("show");
+      }
+      function hideTip(){ tooltip.classList.remove("show"); }
+      wrap.addEventListener("mouseenter",showTip); wrap.addEventListener("mousemove",showTip); wrap.addEventListener("mouseleave",hideTip);
+      wrap.addEventListener("touchstart",e=>{ e.preventDefault(); showTip(); },{passive:false});
+      wrap.addEventListener("touchend",()=>setTimeout(hideTip,2500));
+      clusterBars.appendChild(wrap);
+    });
+    const dateEl=document.createElement("div"); dateEl.className="date-label"; dateEl.textContent=fmtDateID(row.date);
+    cluster.appendChild(clusterBars); cluster.appendChild(dateEl); frag.appendChild(cluster);
+    const doneIdx=filtered.length-1-chronIdx;
+    if(doneIdx>0 && doneIdx%40===0){ if(onProgress) onProgress(doneIdx/filtered.length); await yieldUI(); }
+  }
+  bars.appendChild(frag);
+  $("chartTitle").textContent="Grafik 3D berjenjang - "+sel.join(", ")+" ("+filtered.length+" hari, today kiri)";
+}
+/* ============================= BAGIAN 4 =============================
+   Tabel Historis + Selisih — Today first, auto panjang (no pagination).
+   ===================================================================== */
+async function renderTable(onProgress){
+  const thead=$("thead"), tbody=$("tbody"); thead.innerHTML=""; tbody.innerHTML="";
+  if(!allData.length){ thead.innerHTML="<tr><th>Data belum termuat. Lihat pesan di atas ⬆️</th></tr>"; $("tableInfo").textContent="-"; return; }
+  const sel=getSel();
+  if(!filtered.length){ thead.innerHTML="<tr><th>Tidak ada data di rentang tanggal ini</th></tr>"; $("tableInfo").textContent="-"; return; }
+  if(!sel.length){ thead.innerHTML="<tr><th>Pilih ticker</th></tr>"; $("tableInfo").textContent="-"; return; }
+  const tr=document.createElement("tr");
+  const th0=document.createElement("th"); th0.textContent="Tanggal (Today first)"; tr.appendChild(th0);
+  sel.forEach(t=>{
+    const col=colorOf(t);
+    const th=document.createElement("th");
+    th.className="ticker-th";
+    th.style.borderTop=`3px solid ${col}`;
+    th.innerHTML=`<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${col};margin-right:6px;vertical-align:middle"></span><span style="color:${col};font-weight:800">${t}</span><span style="color:#9ca3af;font-weight:400"> (Close + Selisih)</span>`;
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  const frag=document.createDocumentFragment();
+  let r=0;
+  for(let idx=filtered.length-1; idx>=0; idx--,r++){
+    const row=filtered[idx];
+    let prevRow=idx>0?filtered[idx-1]:null;
+    if(!prevRow){ const allIdx=allData.findIndex(r=>r.date===row.date); if(allIdx>0) prevRow=allData[allIdx-1]; }
+    const tr=document.createElement("tr");
+    const td0=document.createElement("td"); td0.className="date"; td0.textContent=fmtDateID(row.date); tr.appendChild(td0);
+    sel.forEach(t=>{
+      const td=document.createElement("td");
+      const price=row[t];
+      if(typeof price!=="number"){ td.textContent="-"; tr.appendChild(td); return; }
+      const span=document.createElement("span"); span.style.fontWeight="800"; span.textContent="Rp "+fmtNum(price);
+      td.appendChild(span);
+      if(prevRow&&typeof prevRow[t]==="number"){
+        const diff=price-prevRow[t], pct=diff/prevRow[t]*100;
+        const badge=document.createElement("span");
+        badge.className="badge "+(diff>0?"up":diff<0?"down":"flat");
+        badge.textContent=(diff>0?"▲":diff<0?"▼":"•")+fmtNum(Math.abs(Math.round(diff)))+" ("+pct.toFixed(2)+"%)";
+        td.appendChild(badge);
+      }
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+    if(r>0 && r%80===0){ if(onProgress) onProgress(r/filtered.length); await yieldUI(); }
+  }
+  tbody.appendChild(frag);
+  $("tableInfo").textContent=filtered.length+" hari • "+sel.length+" ticker • "+fmtDateID(filtered[0].date)+" s/d "+fmtDateID(filtered[filtered.length-1].date)+" • auto panjang • ▲ naik ▼ turun";
+}
+/* ============================= BAGIAN 5 =============================
+   Tabel Historis + Selisih + Index — sama persis dengan Bagian 4 (baca dari
+   `filtered`/`selected` yang sama, format tanggal & badge sama), HANYA beda:
+   baris tabel bisa diurutkan (index) berdasarkan tanggal (default), nilai
+   selisih, atau persentase, dari 1 mata uang pilihan user. Pilih lewat
+   toolbar ATAU klik langsung header ticker di tabel (klik header otomatis
+   pindah ke mode "Nilai Selisih" kalau lagi di mode tanggal, supaya klik
+   selalu kelihatan efeknya).
+   ===================================================================== */
+let table5Mode="date", table5Ticker="";
+function syncTable5Ticker(){
+  const sel=getSel();
+  if(!sel.length){ table5Ticker=""; }
+  else if(!sel.includes(table5Ticker)){ table5Ticker=sel[0]; }
+  const s=$("indexTickerSelect"); if(!s) return;
+  s.innerHTML="";
+  sel.forEach(t=>{ const o=document.createElement("option"); o.value=t; o.textContent=t; s.appendChild(o); });
+  s.value=table5Ticker;
+}
+function table5Prev(idx,row){
+  let prev=idx>0?filtered[idx-1]:null;
+  if(!prev){ const allIdx=allData.findIndex(r=>r.date===row.date); if(allIdx>0) prev=allData[allIdx-1]; }
+  return prev;
+}
+function table5Value(row,idx,ticker){
+  const prev=table5Prev(idx,row);
+  if(!prev||typeof row[ticker]!=="number"||typeof prev[ticker]!=="number") return null;
+  const diff=row[ticker]-prev[ticker];
+  return table5Mode==="pct" ? (prev[ticker]!==0?diff/prev[ticker]*100:0) : diff;
+}
+function table5Rows(){
+  const arr=filtered.map((row,idx)=>({row,idx}));
+  if(table5Mode==="date"||!table5Ticker) return arr.sort((a,b)=>new Date(b.row.date)-new Date(a.row.date));
+  return arr.sort((a,b)=>{
+    const av=table5Value(a.row,a.idx,table5Ticker), bv=table5Value(b.row,b.idx,table5Ticker);
+    if(av==null&&bv==null) return new Date(b.row.date)-new Date(a.row.date);
+    if(av==null) return 1; if(bv==null) return -1;
+    return (bv-av)||(new Date(b.row.date)-new Date(a.row.date));
+  });
+}
+function table5ModeLabel(){ return table5Mode==="diff"?"nilai selisih":table5Mode==="pct"?"persentase":"tanggal"; }
+function table5Info(){
+  if(!filtered.length) return "-";
+  return filtered.length+" hari • "+getSel().length+" ticker • "+fmtDateID(filtered[0].date)+" s/d "+fmtDateID(filtered[filtered.length-1].date)+" • diurutkan berdasarkan "+(table5Ticker||"-")+" • berdasarkan "+table5ModeLabel();
+}
+async function renderTable5(onProgress){
+  const thead=$("thead5"), tbody=$("tbody5"); if(!thead||!tbody) return;
+  thead.innerHTML=""; tbody.innerHTML=""; syncTable5Ticker();
+  const sel=getSel();
+  if(!allData.length){ thead.innerHTML="<tr><th>Data belum termuat. Lihat pesan di atas ⬆️</th></tr>"; $("table5Info").textContent="-"; return; }
+  if(!filtered.length){ thead.innerHTML="<tr><th>Tidak ada data di rentang tanggal ini</th></tr>"; $("table5Info").textContent="-"; return; }
+  if(!sel.length){ thead.innerHTML="<tr><th>Pilih ticker</th></tr>"; $("table5Info").textContent="-"; return; }
+  const tr=document.createElement("tr");
+  const th0=document.createElement("th"); th0.textContent="Tanggal"; tr.appendChild(th0);
+  sel.forEach(t=>{
+    const col=colorOf(t);
+    const th=document.createElement("th");
+    th.className="ticker-th index-sortable"+(t===table5Ticker&&table5Mode!=="date"?" index-active":"");
+    th.style.borderTop=`3px solid ${col}`;
+    th.innerHTML=`<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${col};margin-right:6px;vertical-align:middle"></span><span style="color:${col};font-weight:800">${t}</span><span style="color:#9ca3af;font-weight:400"> (Close + Selisih)</span>`;
+    th.title="Klik untuk index berdasarkan "+t;
+    th.addEventListener("click",()=>{ table5Ticker=t; if(table5Mode==="date") table5Mode="diff"; renderTable5(); });
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  const rows=table5Rows();
+  const frag=document.createDocumentFragment();
+  let r5=0;
+  for(const {row,idx} of rows){
+    const tr=document.createElement("tr");
+    const td0=document.createElement("td"); td0.className="date"; td0.textContent=fmtDateID(row.date); tr.appendChild(td0);
+    sel.forEach(t=>{
+      const td=document.createElement("td");
+      const price=row[t];
+      if(typeof price!=="number"){ td.textContent="-"; tr.appendChild(td); return; }
+      const span=document.createElement("span"); span.style.fontWeight="800"; span.textContent="Rp "+fmtNum(price);
+      td.appendChild(span);
+      const prev=table5Prev(idx,row);
+      if(prev&&typeof prev[t]==="number"){
+        const diff=price-prev[t], pct=prev[t]!==0?diff/prev[t]*100:0;
+        const badge=document.createElement("span");
+        badge.className="badge "+(diff>0?"up":diff<0?"down":"flat");
+        badge.textContent=(diff>0?"▲":diff<0?"▼":"•")+fmtNum(Math.abs(Math.round(diff)))+" ("+(pct>=0?"+":"")+pct.toFixed(2)+"%)";
+        td.appendChild(badge);
+      }
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+    r5++;
+    if(r5>0 && r5%80===0){ if(onProgress) onProgress(r5/rows.length); await yieldUI(); }
+  }
+  tbody.appendChild(frag);
+  $("table5Info").textContent=table5Info();
+  $("table5Title").textContent=table5Mode==="date"?"Tabel Index • Tanggal (default)":"Tabel Index • "+(table5Ticker||"-")+" • "+table5ModeLabel();
+  const mbtns=document.getElementById("indexModeButtons");
+  if(mbtns) [...mbtns.children].forEach(b=>b.classList.toggle("active",b.dataset.mode===table5Mode));
+}
+/* ==================== RENDER ORCHESTRATOR (dipanggil tiap kali Bagian 1 berubah) ====================
+   Render Bagian 3+4 di-chunk (yield tiap beberapa baris) + progress overlay kalau data*ticker
+   cukup besar (mis. 5 Tahun + banyak ticker) -- supaya user TAU halaman lagi proses, bukan lag.
+   Render kecil (kasus umum) jalan seperti biasa, gak ada overlay yang muncul-hilang sia-sia. */
+const HEAVY_RENDER_THRESHOLD=600; // filtered.length * jumlah ticker dicentang
+function renderAll(){
+  renderStats();
+  const sel=getSel();
+  const heavy=filtered.length*sel.length>HEAVY_RENDER_THRESHOLD;
+  if(heavy){
+    showProgress("Merender tampilan…");
+    (async()=>{
+      try{
+        await renderBars(f=>setProgress(f*40));
+        await renderTable(f=>setProgress(40+f*30));
+        await renderTable5(f=>setProgress(70+f*30));
+        setProgress(100);
+      } finally { await new Promise(r=>setTimeout(r,150)); hideProgress(); }
+    })();
+  } else {
+    renderBars(); renderTable(); renderTable5();
+  }
+}
+
+/* ==================== DATA FETCH — data.json riil SAJA, tidak ada dummy/sintetis ====================
+   Kalau fetch gagal: coba lagi otomatis 2x (jaring2 gangguan koneksi sesaat), lalu kalau tetap gagal,
+   tampilkan pesan error jujur + tombol "Coba Lagi" manual. TIDAK PERNAH generate angka karangan sbg
+   pengganti — dashboard finansial yang dipakai banyak orang tidak boleh menyesatkan. */
+
+/* ==================== DATA FETCH KURS — IDR base, currency-api, cache per-tanggal ==================== */
+function isRecentDate(dateStr){
+  const today=new Date(); today.setUTCHours(0,0,0,0);
+  const d=new Date(dateStr+'T00:00:00Z');
+  const ageDays=Math.round((today-d)/86400000);
+  return ageDays<=1;
+}
+async function fetchDay(dateStr){
+  const cacheKey='fx_'+dateStr;
+  const cached=localStorage.getItem(cacheKey);
+  if(cached){
+    try{ const p=JSON.parse(cached); if(p.expiry>Date.now()) return p.data; }catch(e){}
+  }
+  const urls=[`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${dateStr}/v1/currencies/usd.json`, `https://${dateStr}.currency-api.pages.dev/v1/currencies/usd.json`];
+  for(const url of urls){
+    try{
+      const res=await fetch(url,{cache:"no-store"});
+      if(res.ok){
+        const json=await res.json();
+        if(json&&json.usd&&json.usd.idr){
+          const expiry = isRecentDate(dateStr) ? (Date.now()+86400000) : (Date.now()+100*365*86400000);
+          try{ localStorage.setItem(cacheKey, JSON.stringify({data:json.usd, expiry})); }catch(e){}
+          return json.usd;
+        }
+      }
+    }catch(e){}
+  }
+  return null;
+}
+async function fetchRatesRange(start,end){
+  let dates=[]; let cur=new Date(start+'T00:00:00Z'); const endD=new Date(end+'T00:00:00Z');
+  while(cur<=endD){ dates.push(cur.toISOString().slice(0,10)); cur.setUTCDate(cur.getUTCDate()+1); }
+  const results=[];
+  for(let i=0;i<dates.length;i+=5){
+    const batch=dates.slice(i,i+5);
+    const res=await Promise.all(batch.map(d=>fetchDay(d)));
+    batch.forEach((dt,idx)=>{
+      const usd=res[idx];
+      if(usd){
+        let row={date:dt};
+        const idrPerUsd=usd.idr;
+        TICKERS.forEach(c=>{
+          if(c==='USD') row[c]=idrPerUsd;
+          else{ let rate=usd[c.toLowerCase()]; row[c]=rate? (idrPerUsd/rate):null; }
+        });
+        results.push(row);
+      }
+    });
+    await new Promise(r=>setTimeout(r,50));
+  }
+  return results.sort((a,b)=>new Date(a.date)-new Date(b.date));
+}
+async function findLatestDate(){
+  let d=new Date();
+  for(let i=0;i<7;i++){
+    let ds=d.toISOString().slice(0,10);
+    let res=await fetchDay(ds);
+    if(res) return ds;
+    d.setUTCDate(d.getUTCDate()-1);
+  }
+  return new Date().toISOString().slice(0,10);
+}
+function fetchData(){
+  $("subtitle").textContent="Memuat live "+TICKERS.length+" mata uang…"; $("subtitle").style.color="";
+  (async()=>{
+    try{
+      const endD=await findLatestDate();
+      let startD=new Date(endD+'T00:00:00Z'); startD.setUTCDate(startD.getUTCDate()-365);
+      let startStr=startD.toISOString().slice(0,10); if(startStr<EARLIEST_DATE) startStr=EARLIEST_DATE;
+      $("startDate").value=startStr; $("endDate").value=endD;
+      $("subtitle").textContent="⏳ Menarik data "+startStr+" s/d "+endD+"…";
+      const data=await fetchRatesRange(startStr,endD);
+      if(!data.length) throw new Error("Data kosong dari API");
+      allData=data;
+      fetchRetries=0;
+      $("subtitle").textContent="Live: "+allData.length+" hari • "+fmtDateID(allData[0].date)+" s/d "+fmtDateID(allData[allData.length-1].date)+" • Full "+TICKERS.length+" mata uang • Today kiri • IDR base";
+      applyQuickRange(DEFAULT_QUICK_KEY);
+    }catch(e){
+      if(fetchRetries<2){ fetchRetries++; $("subtitle").textContent="Gagal memuat ("+e.message+"), mencoba lagi… ("+fetchRetries+"/2)"; setTimeout(fetchData,1500); return; }
+      showFetchError(e.message);
+    }
+  })();
+}
+function showFetchError(reason){
+  allData=[]; filtered=[];
+  $("subtitle").style.color="#ef4444";
+  $("subtitle").innerHTML="⚠️ Gagal memuat data asli kurs dari API ("+reason+"). <b>Tidak ada data yang ditampilkan</b> — bukan data dummy/palsu. Cek koneksi lalu "+'<button id="btnRetryFetch" style="cursor:pointer;background:#f59e0b;border:none;color:#111;font-weight:800;border-radius:6px;padding:3px 10px;margin-left:2px">🔄 Coba Lagi</button>';
+  $("btnRetryFetch").addEventListener("click",()=>{ fetchRetries=0; fetchData(); });
+  renderAll();
+}
+
+
+function applyFilter(){
+  const s=$("startDate").value, e=$("endDate").value;
+  const sd=s?parseDate(s):null, ed=e?parseDate(e):null;
+  filtered=allData.filter(r=>{ const d=new Date(r.date); if(sd&&d<sd) return false; if(ed&&d>ed) return false; return true; });
+  renderAll();
+}
+
+/* ============================= EXPORT / PRINT =============================
+   exportImage() = JPG/PNG, 100% vanilla (NOL library — html2canvas sudah dicabut
+   total, DAN percobaan SVG-foreignObject sebelumnya JUGA dibuang krn Firefox
+   men-taint canvas-nya). Sekarang gambar LANGSUNG dari data pakai Canvas 2D
+   primitif (exDrawStats/exDrawChart/exDrawTable) — TIDAK PERNAH capture/
+   rasterize DOM yang sudah ada, jadi gak mungkin kena timeout ala html2canvas
+   ataupun taint ala SVG-foreignObject, krn gak ada "konten asing" yg dimuat.
+   Progress bar asli (bukan pura-pura) krn drawChart/drawTable async & yield
+   ke browser tiap beberapa baris, jadi tab gak "freeze" pas render banyak data.
+   doPrint()/getPrintHTML() = window.print() native, jendela SEMENTARA yang
+   auto-close begitu print selesai/dibatalkan (lihat win.onafterprint di
+   bawah) — biar gak numpuk memory di CPU tua/Windows 7.
+   ============================================================================ */
+/* ---- Progress overlay: dipakai export & (nanti) render berat lain. Beneran destroy
+   (element.remove()) begitu selesai, bukan cuma disembunyikan -- gak numpuk di DOM/memory. ---- */
+function showProgress(label){
+  let ov=document.getElementById("__prog");
+  if(!ov){
+    ov=document.createElement("div"); ov.id="__prog";
+    ov.style.cssText="position:fixed;inset:0;background:rgba(15,17,21,.94);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:inherit";
+    ov.innerHTML='<div id="__progLabel" style="color:#e5e7eb;font-weight:800;font-size:13px"></div><div style="width:260px;height:8px;background:#242a38;border-radius:5px;overflow:hidden"><div id="__progBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#3b82f6)"></div></div><div id="__progPct" style="color:#9ca3af;font-size:11px">0%</div>';
+    document.body.appendChild(ov);
+  }
+  ov.style.display="flex"; document.getElementById("__progLabel").textContent=label; setProgress(0);
+}
+function setProgress(pct){
+  pct=Math.max(0,Math.min(100,Math.round(pct)));
+  const bar=document.getElementById("__progBar"), p=document.getElementById("__progPct");
+  if(bar) bar.style.width=pct+"%"; if(p) p.textContent=pct+"%";
+}
+function hideProgress(){ const ov=document.getElementById("__prog"); if(ov) ov.remove(); }
+function yieldUI(){ return new Promise(r=>setTimeout(r,0)); }
+
+/* ---- Gambar primitif vanilla, LANGSUNG dari data (bukan capture DOM) ----
+   Kenapa: html2canvas timeout (redraw manual tiap node), SVG-foreignObject taint
+   canvas-nya di Firefox. Canvas 2D primitives (fillRect/fillText) gak kena dua2nya
+   krn gak ada "konten asing" yang dimuat sama sekali -- gambar kotak & teks doang. */
+const EX={bg:"#0f1115",panel:"#171a23",card:"#1a1e28",cardBorder:"#262b36",text:"#e5e7eb",dim:"#9ca3af",faint:"#64748b",up:"#10b981",down:"#ef4444"};
+function exRoundRect(ctx,x,y,w,h,r){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function exText(ctx,s,x,y,{size=11,weight=600,color=EX.text,align="left"}={}){ ctx.font=weight+" "+size+"px Segoe UI, Arial, sans-serif"; ctx.fillStyle=color; ctx.textAlign=align; ctx.textBaseline="alphabetic"; ctx.fillText(String(s),x,y); }
+
+
+function isLightColorHex(hex){
+  if(!hex || !hex.startsWith('#')) return false;
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  if(hex.length<6) return false;
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  const luma=(0.299*r+0.587*g+0.114*b)/255;
+  return luma>0.68;
+}
+function exDrawStats(ctx,x0,y0,maxW,sel,draw){
+  const cardW=200,gap=10,cardH=sel.length===1?74:128;
+  const cols=Math.max(1,Math.floor((maxW+gap)/(cardW+gap)));
+  const n=sel.length===1?5:sel.length, rows=Math.ceil(n/cols), totalH=rows*(cardH+gap)-gap;
+  if(!draw) return totalH;
+  function base(cx,cy,col){ ctx.fillStyle=EX.card; exRoundRect(ctx,cx,cy,cardW,cardH,10); ctx.fill(); ctx.strokeStyle=EX.cardBorder; ctx.lineWidth=1; exRoundRect(ctx,cx,cy,cardW,cardH,10); ctx.stroke(); ctx.fillStyle=col; exRoundRect(ctx,cx,cy,4,cardH,2); ctx.fill(); }
+  if(sel.length===1){
+    const t=sel[0], col=colorOf(t);
+    const vals=filtered.map(r=>r[t]).filter(v=>typeof v==="number");
+    const max=Math.max(...vals),min=Math.min(...vals),avg=vals.reduce((a,b)=>a+b,0)/vals.length, ud=computeUpDown(t);
+    const specs=[["MAX - "+t,"Rp "+fmtNum(max)],["MIN - "+t,"Rp "+fmtNum(min)],["AVG - "+t,"Rp "+fmtNum(avg)],["FREQ - "+t,vals.length+" hari"],["NAIK/TURUN - "+t,null]];
+    specs.forEach((s,i)=>{ const cx=x0+(i%cols)*(cardW+gap), cy=y0+Math.floor(i/cols)*(cardH+gap); base(cx,cy,col);
+      exText(ctx,s[0],cx+14,cy+22,{size:9,weight:700,color:EX.dim});
+      if(i===4){ 
+        exText(ctx,"▲ "+ud.up+" hari",cx+14,cy+42,{size:11,weight:800,color:EX.up}); 
+        exText(ctx,"▼ "+ud.down+" hari",cx+14,cy+56,{size:11,weight:800,color:EX.down});
+        if(filtered.length) exText(ctx,fmtDateID(filtered[0].date)+" s/d "+fmtDateID(filtered[filtered.length-1].date),cx+14,cy+cardH-8,{size:8,weight:600,color:EX.faint});
+      }
+      else exText(ctx,s[1],cx+14,cy+46,{size:16,weight:800,color:"#fff"});
+    });
+  } else {
+    sel.forEach((t,i)=>{ const col=colorOf(t); const vals=filtered.map(r=>r[t]).filter(v=>typeof v==="number"); if(!vals.length) return;
+      const max=Math.max(...vals),min=Math.min(...vals),avg=vals.reduce((a,b)=>a+b,0)/vals.length, ud=computeUpDown(t);
+      const cx=x0+(i%cols)*(cardW+gap), cy=y0+Math.floor(i/cols)*(cardH+gap); base(cx,cy,col);
+      ctx.fillStyle=col; exRoundRect(ctx,cx+14,cy+12,9,9,2); ctx.fill(); // titik warna - sinkron dgn titik di kartu live
+      exText(ctx,t+" • "+vals.length+" hari",cx+28,cy+20,{size:11,weight:800,color:"#fff"});
+      [["MAX","Rp "+fmtNum(max)],["MIN","Rp "+fmtNum(min)],["AVG","Rp "+fmtNum(Math.round(avg))],["FREQ",vals.length]].forEach((c,ci)=>{
+        const px=cx+14+(ci%2)*92, py=cy+38+Math.floor(ci/2)*26;
+        exText(ctx,c[0],px,py,{size:8,weight:700,color:EX.dim}); exText(ctx,String(c[1]),px,py+13,{size:11,weight:800,color:"#fff"});
+      });
+      // FIX: tambahkan "hari" dan warna header sudah ada via base
+      exText(ctx,"▲ "+ud.up+" hari",cx+14,cy+cardH-24,{size:10,weight:800,color:EX.up});
+      exText(ctx,"▼ "+ud.down+" hari",cx+86,cy+cardH-24,{size:10,weight:800,color:EX.down});
+      if(filtered.length) exText(ctx,fmtDateID(filtered[0].date)+" s/d "+fmtDateID(filtered[filtered.length-1].date),cx+14,cy+cardH-8,{size:7,weight:600,color:EX.faint});
+    });
+  }
+  return totalH;
+}
+
+
+
+
+async function exDrawChart(ctx,x0,y0,maxW,sel,draw,onProgress){
+  const barW=38,barGap=18,clusterPad=16,legendH=30,dateLabelH=24,chartH=320,labelHeadroom=62;
+  const slot=barW+barGap, clusterW=sel.length*slot-barGap;
+  const perRow=Math.max(1,Math.floor((maxW+clusterPad)/(clusterW+clusterPad)));
+  const numRows=Math.ceil(filtered.length/perRow)||1, rowH=chartH+dateLabelH+36;
+  const totalH=legendH+numRows*rowH;
+  if(!draw) return totalH;
+  let lx=x0; sel.forEach(t=>{ ctx.fillStyle=colorOf(t); ctx.fillRect(lx,y0+6,11,11); exText(ctx,t,lx+16,y0+15,{size:10,weight:800}); lx+=16+ctx.measureText(t).width+20; });
+  let allVals=[]; filtered.forEach(r=>sel.forEach(t=>{ if(typeof r[t]==="number") allVals.push(r[t]); }));
+  if(!allVals.length) return totalH;
+  const min0=Math.min(...allVals), max0=Math.max(...allVals), range0=(max0-min0)||1;
+  const min=min0-range0*0.05, drawableH=chartH-labelHeadroom;
+  const chartTop=y0+legendH; let idx=0;
+  function drawGlossyCapsule(bx,by,bw,bh,col){
+    const r=Math.min(16,bw/2);
+    ctx.fillStyle=col;
+    exRoundRect(ctx,bx,by,bw,bh,r); ctx.fill();
+    const grad = ctx.createLinearGradient(bx,by,bx+bw,by);
+    grad.addColorStop(0,'rgba(0,0,0,0.28)');
+    grad.addColorStop(0.18,'rgba(255,255,255,0.18)');
+    grad.addColorStop(0.5,'rgba(255,255,255,0)');
+    grad.addColorStop(0.82,'rgba(255,255,255,0.22)');
+    grad.addColorStop(1,'rgba(0,0,0,0.22)');
+    ctx.fillStyle=grad;
+    exRoundRect(ctx,bx,by,bw,bh,r); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.78)';
+    ctx.beginPath();
+    ctx.ellipse(bx+bw/2,by+bh*0.18,bw*0.34,bh*0.12,0,0,Math.PI*2); ctx.fill();
+    const grad2 = ctx.createLinearGradient(bx,by,bx,by+bh);
+    grad2.addColorStop(0,'rgba(255,255,255,0)');
+    grad2.addColorStop(0.6,'rgba(0,0,0,0)');
+    grad2.addColorStop(1,'rgba(0,0,0,0.26)');
+    ctx.fillStyle=grad2;
+    exRoundRect(ctx,bx,by,bw,bh,r); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.22)'; ctx.lineWidth=1;
+    exRoundRect(ctx,bx,by,bw,bh,r); ctx.stroke();
+  }
+  for(let i=filtered.length-1;i>=0;i--,idx++){
+    const row=filtered[i]; let prev=i>0?filtered[i-1]:null; if(!prev){ const allIdx=allData.findIndex(r=>r.date===row.date); if(allIdx>0) prev=allData[allIdx-1]; }
+    const rowIdx=Math.floor(idx/perRow), colIdx=idx%perRow;
+    const cx=x0+colIdx*(clusterW+clusterPad), cy=chartTop+rowIdx*rowH;
+    sel.forEach((t,ti)=>{
+      const val=row[t]; if(typeof val!=="number") return;
+      const prevVal = prev && typeof prev[t]==="number" ? prev[t] : null;
+      const diff = prevVal!=null ? val-prevVal : null;
+      const bx=cx+ti*slot, barH=Math.max(32,((val-min)/(max0-min))*drawableH), barY=cy+chartH-barH;
+      const col=colorOf(t);
+      drawGlossyCapsule(bx,barY,barW,barH,col);
+      // vertical ticker inside
+      const isLight = (function(hex){
+        if(!hex||!hex.startsWith('#')) return false;
+        let h=hex.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join('');
+        const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+        const luma=(0.299*r+0.587*g+0.114*b)/255; return luma>0.68;
+      })(col);
+      ctx.save();
+      ctx.translate(bx+barW/2, barY+barH/2);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillStyle = isLight ? '#111' : '#fff';
+      ctx.font='900 13px Segoe UI, Arial, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.65)'; ctx.shadowBlur=2; ctx.shadowOffsetY=1;
+      ctx.fillText(t,0,0);
+      ctx.restore();
+      // Prev box kuning/merah
+      if(prevVal!=null){
+        const isUp = diff>0, isDown = diff<0;
+        const boxY = barY-48;
+        const boxW = 68, boxH=14;
+        const boxX = bx+barW/2 - boxW/2;
+        // background
+        ctx.fillStyle = isUp ? 'rgba(234,179,8,0.22)' : isDown ? 'rgba(239,68,68,0.22)' : 'rgba(100,116,139,0.2)';
+        exRoundRect(ctx,boxX,boxY,boxW,boxH,5); ctx.fill();
+        ctx.strokeStyle = isUp ? '#eab308' : isDown ? '#ef4444' : '#64748b';
+        ctx.lineWidth=1;
+        exRoundRect(ctx,boxX,boxY,boxW,boxH,5); ctx.stroke();
+        exText(ctx,"Prev Rp"+fmtNum(prevVal),boxX+boxW/2,boxY+10,{size:7,weight:800,color: isUp ? '#fde047' : isDown ? '#fecaca' : '#cbd5e1',align:"center"});
+        // current price
+        exText(ctx,"Rp"+fmtNum(val),bx+barW/2,boxY+24,{size:9,weight:800,color:"#fff",align:"center"});
+        if(diff!==null){
+          const dcol=diff>0?EX.up:diff<0?EX.down:EX.faint, sym=diff>0?"▲":diff<0?"▼":"•";
+          const pct = prevVal!==0 ? (diff/prevVal*100) : 0;
+          exText(ctx,sym+fmtNum(Math.abs(Math.round(diff)))+" ("+(pct>=0?"+":"")+pct.toFixed(2)+"%)",bx+barW/2,boxY+34,{size:7,weight:700,color:dcol,align:"center"});
+        }
+      } else {
+        exText(ctx,"Rp"+fmtNum(val),bx+barW/2,barY-18,{size:9,weight:800,color:"#fff",align:"center"});
+      }
+    });
+    // date label - make it clearly visible with background pill (DD/MM/YYYY lengkap, sinkron format tanggal di semua bagian)
+    const dateStr=fmtDateID(row.date);
+    const dX=cx+clusterW/2, dY=cy+chartH+20;
+    ctx.fillStyle="#1f2533"; exRoundRect(ctx,dX-34,dY-2,68,14,7); ctx.fill();
+    ctx.strokeStyle="#2a3449"; ctx.lineWidth=1; exRoundRect(ctx,dX-34,dY-2,68,14,7); ctx.stroke();
+    exText(ctx,dateStr,dX,dY+8,{size:8,weight:700,color:"#e2e8f0",align:"center"});
+    if(idx%25===0){ if(onProgress) onProgress(idx/filtered.length); await yieldUI(); }
+  }
+  return totalH;
+}
+
+
+
+async function exDrawTable(ctx,x0,y0,maxW,sel,draw,onProgress){
+  const rowH=26, dateColW=100, minColW=150, colW=Math.max(minColW,(maxW-dateColW)/sel.length), totalW=dateColW+colW*sel.length;
+  const totalH=rowH*(filtered.length+1);
+  if(!draw) return totalH;
+  ctx.fillStyle=EX.panel; ctx.fillRect(x0,y0,totalW,rowH);
+  exText(ctx,"Tanggal (Today first)",x0+8,y0+17,{size:10,weight:800,color:EX.dim});
+  sel.forEach((t,ti)=>{ const cx=x0+dateColW+ti*colW; ctx.fillStyle=colorOf(t); ctx.fillRect(cx,y0,colW-1,3); exText(ctx,t,cx+8,y0+17,{size:10,weight:800,color:colorOf(t)}); });
+  let r=0;
+  for(let i=filtered.length-1;i>=0;i--,r++){
+    const row=filtered[i]; let prev=i>0?filtered[i-1]:null; if(!prev){ const allIdx=allData.findIndex(r=>r.date===row.date); if(allIdx>0) prev=allData[allIdx-1]; } const ry=y0+rowH*(r+1);
+    ctx.fillStyle=r%2===0?"#171a23":"#14161d"; ctx.fillRect(x0,ry,totalW,rowH);
+    exText(ctx,fmtDateID(row.date),x0+8,ry+17,{size:10,weight:700,color:EX.text});
+    sel.forEach((t,ti)=>{
+      const cx=x0+dateColW+ti*colW, price=row[t];
+      if(typeof price!=="number"){ exText(ctx,"-",cx+8,ry+17,{size:10,color:EX.faint}); return; }
+      exText(ctx,"Rp "+fmtNum(price),cx+8,ry+17,{size:10,weight:800,color:"#fff"});
+      if(prev&&typeof prev[t]==="number"){
+        const diff=price-prev[t], pct=(diff/prev[t])*100, dcol=diff>0?EX.up:diff<0?EX.down:EX.faint, sym=diff>0?"▲":diff<0?"▼":"•";
+        exText(ctx,sym+fmtNum(Math.abs(diff))+" ("+pct.toFixed(2)+"%)",cx+8+colW-16,ry+17,{size:9,weight:700,color:dcol,align:"right"});
+      }
+    });
+    if(r%40===0){ if(onProgress) onProgress(r/filtered.length); await yieldUI(); }
+  }
+  return totalH;
+}
+
+async function exDrawIndexedTable(ctx,x0,y0,maxW,sel,draw,onProgress){
+  const rowH=26, dateColW=100, minColW=150, colW=Math.max(minColW,(maxW-dateColW)/sel.length), totalW=dateColW+colW*sel.length;
+  const rows=table5Rows();
+  const totalH=rowH*(rows.length+1);
+  if(!draw) return totalH;
+  ctx.fillStyle=EX.panel; ctx.fillRect(x0,y0,totalW,rowH);
+  exText(ctx,"Tanggal • Index "+(table5Ticker||"-")+" • "+table5ModeLabel(),x0+8,y0+17,{size:10,weight:800,color:EX.dim});
+  sel.forEach((t,ti)=>{ const cx=x0+dateColW+ti*colW; ctx.fillStyle=colorOf(t); ctx.fillRect(cx,y0,colW-1,3); exText(ctx,t,cx+8,y0+17,{size:10,weight:800,color:colorOf(t)}); });
+  for(let r=0;r<rows.length;r++){
+    const {row,idx}=rows[r], ry=y0+rowH*(r+1);
+    ctx.fillStyle=r%2===0?"#171a23":"#14161d"; ctx.fillRect(x0,ry,totalW,rowH);
+    exText(ctx,fmtDateID(row.date),x0+8,ry+17,{size:10,weight:700,color:EX.text});
+    sel.forEach((t,ti)=>{
+      const cx=x0+dateColW+ti*colW, price=row[t];
+      if(typeof price!=="number"){ exText(ctx,"-",cx+8,ry+17,{size:10,color:EX.faint}); return; }
+      exText(ctx,"Rp "+fmtNum(price),cx+8,ry+17,{size:10,weight:800,color:"#fff"});
+      const prev=table5Prev(idx,row);
+      if(prev&&typeof prev[t]==="number"){
+        const diff=price-prev[t], pct=prev[t]!==0?diff/prev[t]*100:0, dcol=diff>0?EX.up:diff<0?EX.down:EX.faint, sym=diff>0?"▲":diff<0?"▼":"•";
+        exText(ctx,sym+fmtNum(Math.abs(Math.round(diff)))+" ("+(pct>=0?"+":"")+pct.toFixed(2)+"%)",cx+8+colW-16,ry+17,{size:9,weight:700,color:dcol,align:"right"});
+      }
+    });
+    if(r%40===0){ if(onProgress) onProgress(r/rows.length); await yieldUI(); }
+  }
+  return totalH;
+}
+
+const EXPORT_GROUP_SIZE=15; // di atas ini, export dipecah per grup ticker (pola dari file kurs Bro: "part X of N") biar tiap gambar tetap HD & gak ada yg ke-render di luar kanvas
+function exportWidth(sel,includeChart,includeTable){
+  const base=1160-48;
+  let w=base;
+  if(includeChart) w=Math.max(w, sel.length*(32+6)-6);
+  if(includeTable) w=Math.max(w, 100+150*sel.length);
+  return Math.min(w+48,10000);
+}
+async function exportRenderPart(sections){
+  const pad=24, gap=26, titleH=32, scale=2;
+  const sel=sections.stats||sections.chart||sections.table||sections.table5;
+  const W=exportWidth(sel,!!sections.chart,!!sections.table||!!sections.table5);
+  const drawW=W-pad*2;
+  const hStats=sections.stats?exDrawStats(null,0,0,drawW,sections.stats,false):0;
+  const hChart=sections.chart?await exDrawChart(null,0,0,drawW,sections.chart,false):0;
+  const hTable=sections.table?await exDrawTable(null,0,0,drawW,sections.table,false):0;
+  const hTable5=sections.table5?await exDrawIndexedTable(null,0,0,drawW,sections.table5,false):0;
+  let totalH=pad*2;
+  if(sections.stats) totalH+=titleH+hStats+gap;
+  if(sections.chart) totalH+=titleH+hChart+gap;
+  if(sections.table) totalH+=titleH+hTable+gap;
+  if(sections.table5) totalH+=titleH+20+hTable5;
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.round(W*scale); canvas.height=Math.round(totalH*scale);
+  const ctx=canvas.getContext("2d"); ctx.scale(scale,scale);
+  ctx.fillStyle=EX.bg; ctx.fillRect(0,0,W,totalH);
+  let y=pad;
+  if(sections.stats){ exText(ctx,"Bagian 2 - Statistik",pad,y+16,{size:14,weight:800,color:"#fff"}); y+=titleH; exDrawStats(ctx,pad,y,drawW,sections.stats,true); y+=hStats+gap; }
+  if(sections.chart){ exText(ctx,"Bagian 3 - Grafik"+(sections.label||""),pad,y+16,{size:14,weight:800,color:"#fff"}); y+=titleH; await exDrawChart(ctx,pad,y,drawW,sections.chart,true); y+=hChart+gap; }
+  if(sections.table){ exText(ctx,"Bagian 4 - Tabel Historis + Selisih"+(sections.label||""),pad,y+16,{size:14,weight:800,color:"#fff"}); y+=titleH; await exDrawTable(ctx,pad,y,drawW,sections.table,true); y+=hTable+(sections.table5?gap:0); }
+  if(sections.table5){ exText(ctx,"Bagian 5 - Tabel Historis + Selisih • Index "+(table5Ticker||"-")+" • "+table5ModeLabel()+(sections.label||""),pad,y+16,{size:14,weight:800,color:"#fff"}); y+=titleH; exText(ctx,table5Info(),pad,y+12,{size:9,weight:700,color:EX.dim}); y+=20; await exDrawIndexedTable(ctx,pad,y,drawW,sections.table5,true); y+=hTable5; }
+  return canvas;
+}
+function exportDownload(canvas,type,suffix){
+  const link=document.createElement("a");
+  link.download=`kurs-3D-${TICKERS.length}curr-${new Date().toISOString().slice(0,10)}${suffix}.${type}`;
+  link.href= type==="jpg" ? canvas.toDataURL("image/jpeg",0.92) : canvas.toDataURL("image/png");
+  link.click();
+}
+async function exportImage(type){
+  const p2=$("print2").checked, p3=$("print3").checked, p4=$("print4").checked, p5=$("print5").checked;
+  if(!p2&&!p3&&!p4&&!p5){ alert("Pilih minimal 1 bagian Bro"); return; }
+  const sel=getSel();
+  if(!sel.length){ alert("Centang minimal 1 ticker Bro"); return; }
+  if(!filtered.length){ alert("Tidak ada data buat di-export Bro (cek pesan di atas ⬆️)"); return; }
+
+  showProgress("Menyiapkan…"); await yieldUI();
+  try{
+    if(sel.length<=EXPORT_GROUP_SIZE){
+      setProgress(10); await yieldUI();
+      const canvas=await exportRenderPart({stats:p2?sel:null,chart:p3?sel:null,table:p4?sel:null,table5:p5?sel:null});
+      setProgress(95); await yieldUI();
+      exportDownload(canvas,type,"");
+    } else {
+      const groups=[]; for(let i=0;i<sel.length;i+=EXPORT_GROUP_SIZE) groups.push(sel.slice(i,i+EXPORT_GROUP_SIZE));
+      const parts=[];
+      if(p2) parts.push({stats:sel}); // statistik semua ticker aman 1 gambar (grid-nya sudah wrap sendiri)
+      if(p3||p4||p5) groups.forEach((g,gi)=>parts.push({chart:p3?g:null,table:p4?g:null,table5:p5?g:null,label:` (grup ${gi+1}/${groups.length}: ${g[0]}–${g[g.length-1]})`}));
+      const total=parts.length;
+      for(let i=0;i<parts.length;i++){
+        showProgress(`Merender gambar bagian ${i+1}/${total} (ticker banyak, dipecah biar tetap HD & gak kepotong)…`);
+        setProgress(Math.round((i/total)*90)); await yieldUI();
+        const canvas=await exportRenderPart(parts[i]);
+        exportDownload(canvas,type,`-part${i+1}of${total}`);
+        await yieldUI();
+      }
+    }
+    setProgress(100);
+  }catch(e){ alert("Gagal export: "+e.message); console.error(e); }
+  finally{ await new Promise(r=>setTimeout(r,250)); hideProgress(); }
+}
+
+function doPrint(){
+  const p2=$("print2").checked, p3=$("print3").checked, p4=$("print4").checked, p5=$("print5").checked;
+  if(!p2&&!p3&&!p4&&!p5){ alert("Pilih minimal 1 bagian"); return; }
+  const html=getPrintHTML(p2,p3,p4,p5);
+  const win=window.open("","_blank");
+  if(!win){ alert("Popup diblokir browser. Izinkan popup utk window ini supaya bisa Print/PDF."); return; }
+  win.document.write(html); win.document.close();
+  // Jendela print ini SEMENTARA — auto-close begitu dialog print selesai/dibatalkan, gak nunggu user tutup manual
+  win.onafterprint=()=>win.close();
+}
+function getPrintHTML(p2,p3,p4,p5){
+  const selArr=getSel();
+  const sel=selArr.join(", ")||"-";
+  const range=$("rangeInfo").textContent;
+  const baseCSS=document.querySelector("style").textContent;
+  const tickersJSON = JSON.stringify(selArr);
+  let html=`<html><head><meta charset="UTF-8"><title>Print Kurs 3D V7 - Fixed</title>
+  <style>
+${baseCSS}
+    @page{size:landscape;margin:12mm}
+    body{padding:16px;overflow-x:visible;background:#0f1115;color:#e5e7eb}
+    h2{font-size:16px;margin-bottom:8px;color:#fff}
+    h3{font-size:13px;margin:18px 0 8px;border-bottom:1px solid #333;padding-bottom:4px;color:#fff}
+    .note{font-size:10px;color:#94a3b8;margin-top:8px;font-style:italic}
+    .chart-scroll,.table-scroll{overflow:visible !important;width:100% !important;max-height:none !important}
+    #stats, .stats, .stats.multi{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(220px,1fr)) !important;gap:12px !important;overflow:visible !important}
+    .card{overflow:visible !important;min-height:0 !important;background:linear-gradient(180deg,#1a1e28 0%,#14171f 100%) !important;border:1px solid #262b36 !important;border-radius:14px !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;page-break-inside:avoid;position:relative !important}
+    .card:before{content:"" !important;display:block !important;position:absolute !important;top:0 !important;left:0 !important;right:0 !important;height:4px !important;background:var(--accent,#f59e0b) !important;border-radius:14px 14px 0 0 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;z-index:2}
+    .bars{display:flex !important;flex-wrap:wrap !important;gap:22px 18px !important;padding:28px 12px 10px 12px !important;align-items:flex-end !important;min-height:0 !important;overflow:visible !important}
+    .date-cluster{position:relative !important;display:flex !important;flex-direction:column !important;align-items:center !important;flex-shrink:0 !important;margin:0 10px 36px 0 !important;overflow:visible !important}
+    .cluster-bars{position:relative !important;display:block !important;height:360px !important;overflow:visible !important}
+    .bar-3d{position:absolute !important;bottom:0 !important;width:58px !important;display:flex !important;flex-direction:column !important;align-items:center !important;cursor:default !important;--c:#f59e0b;transition:none !important;filter:none !important;overflow:visible !important}
+    .bar-cap, .bar-foot{display:none !important}
+    .bar-body{width:100% !important;background:var(--c) !important;border:none !important;border-radius:18px !important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -10px 18px rgba(0,0,0,0.28), inset 0 16px 26px rgba(255,255,255,0.34), 0 12px 22px rgba(0,0,0,0.52), 0 0 0 1px rgba(0,0,0,0.22) !important;position:relative !important;overflow:hidden !important;padding:0 !important;display:flex !important;flex-direction:column !important;justify-content:center !important;align-items:center !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+    .bar-body::before{content:"" !important;position:absolute !important;top:6px !important;left:14% !important;right:14% !important;height:34% !important;background:linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.28) 58%, rgba(255,255,255,0) 100%) !important;border-radius:999px !important;pointer-events:none !important;z-index:2 !important}
+    .val.price{position:absolute !important;top:-30px !important;left:50% !important;transform:translateX(-50%) !important;writing-mode:horizontal-tb !important;color:#fff !important;background:rgba(0,0,0,0.48) !important;border:1px solid rgba(255,255,255,0.18) !important;padding:2px 7px !important;border-radius:6px !important;font-size:10px !important;font-weight:800 !important;white-space:nowrap !important;z-index:10 !important}
+    .val.diff{position:absolute !important;top:-14px !important;left:50% !important;transform:translateX(-50%) !important;writing-mode:horizontal-tb !important;font-size:8px !important;font-weight:800 !important;z-index:10 !important;margin:0 !important;white-space:nowrap !important;padding:1px 5px !important;border-radius:4px !important}
+    .val.diff.up{color:#065f46 !important;background:#d1fae5 !important}
+    .val.diff.down{color:#991b1b !important;background:#fee2e2 !important}
+    .val.diff.flat{color:#374151 !important;background:#f3f4f6 !important}
+    .print-ticker{writing-mode:vertical-rl !important;transform:rotate(180deg) !important;color:#fff !important;font-weight:900 !important;font-size:16px !important;letter-spacing:0.07em !important;text-shadow:0 1px 3px rgba(0,0,0,0.75) !important;z-index:1 !important;white-space:nowrap !important;text-transform:uppercase !important;line-height:1 !important}
+    .print-ticker.dark{color:#111 !important;text-shadow:0 1px 0 rgba(255,255,255,0.75) !important}
+    .date-label{margin-top:14px !important;font-size:10px !important;background:#1f2533 !important;border:1px solid #2a3449 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact} .card, .bar-body, .date-label, .val.price, .val.diff, .print-ticker, .prev-box{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+    .quick-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+    .index-hint{display:none !important}
+  
+/* --- Prev box kuning/merah --- */
+.prev-box{font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;white-space:nowrap;margin-bottom:4px;border:1px solid;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.prev-box.up{background:rgba(234,179,8,0.18);border-color:#eab308;color:#fde047}
+.prev-box.down{background:rgba(239,68,68,0.18);border-color:#ef4444;color:#fecaca}
+.prev-box.flat{background:rgba(100,116,139,0.18);border-color:#64748b;color:#cbd5e1}
+/* --- Date label fix biar tidak ketutup ekor --- */
+.date-label{margin-top:18px !important;position:relative !important;z-index:20 !important;background:#1f2533 !important;border:1px solid #2a3449 !important;padding:4px 10px !important;border-radius:999px !important;font-size:11px !important;font-weight:800 !important;color:#e2e8f0 !important;box-shadow:0 2px 8px rgba(0,0,0,0.4) !important;display:inline-block !important}
+.cluster-bars{padding-bottom:8px !important}
+.bars{padding-bottom:40px !important}
+.chart-body{padding-bottom:12px !important;overflow:visible !important}
+.chart-scroll{padding-bottom:16px !important}
+/* --- Titik berwarna di Bagian 2 lebih tegas --- */
+.card-label span{width:12px !important;height:12px !important;border-radius:3px !important;box-shadow:0 0 6px var(--accent, currentColor) !important}
+/* .prev-box tetap di dalam kolom bar-nya sendiri (flex, bukan absolute) - sinkron dgn
+   live, jadi TIDAK PERNAH nabrak bar/tanggal tetangga walau berapa pun mata uang dipilih. */
+
+    .card-label{position:relative !important; z-index:3 !important}
+    .card-label span{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; display:inline-block !important; width:12px !important; height:12px !important; border-radius:3px !important; background:var(--accent,#f59e0b) !important; box-shadow:0 0 6px var(--accent) !important; }
+    
+</style></head><body>`;
+  html+=`<h2>Grafik 3D Box Berjenjang - ${sel} <small style="color:#9ca3af">${range}</small></h2><div style="font-size:11px;color:#9ca3af;margin-bottom:12px">Export ${new Date().toLocaleString("id-ID")} • IDR base • ▲ naik ▼ turun</div>`;
+  if(p2) html+=`<h3>Bagian 2 - Statistik</h3>${$("part-2").querySelector(".part-body").innerHTML}<div class="note">* Statistik fix header warna & ▲▼ hari</div>`;
+  if(p3) html+=`<h3>Bagian 3 - Grafik 3D Berjenjang</h3>${$("part-3").querySelector(".part-body").innerHTML}<div class="note">* Bar glossy rounded + kode mata uang vertikal di dalam bar</div>`;
+  if(p4) html+=`<h3>Bagian 4 - Tabel Historis + Selisih</h3>${$("part-4").querySelector(".part-body").innerHTML}<div class="note">* Tabel tetap benar</div>`;
+  if(p5) html+=`<h3>Bagian 5 - Tabel Historis + Selisih • Index</h3>${$("part-5").querySelector(".part-body").innerHTML}<div class="note">* ${table5Info()}</div>`;
+  html+=`<p style="font-size:10px;color:#666;margin-top:20px">Export ${new Date().toLocaleString("id-ID")} • IDR base</p>`;
+  html+=`<script>
+  (function(){
+    try{
+      const tickers = ${tickersJSON};
+      document.querySelectorAll('.date-cluster').forEach(cluster=>{
+        const bars = cluster.querySelectorAll('.bar-3d');
+        bars.forEach((bar,i)=>{
+          const ticker = tickers[i % tickers.length];
+          if(!ticker) return;
+          const body = bar.querySelector('.bar-body');
+          if(!body || body.querySelector('.print-ticker')) return;
+          const el = document.createElement('div');
+          el.className='print-ticker'; el.textContent=ticker;
+          const col=(getComputedStyle(bar).getPropertyValue('--c')||'').trim();
+          let isLight=false;
+          if(col.startsWith('#') && col.length>=7){
+            const r=parseInt(col.slice(1,3),16), g=parseInt(col.slice(3,5),16), b=parseInt(col.slice(5,7),16);
+            const luma=(0.299*r+0.587*g+0.114*b)/255; isLight=luma>0.68;
+          }
+          if(isLight) el.classList.add('dark');
+          body.appendChild(el);
+        });
+      });
+    }catch(e){}
+  })();
+  <\/script>`;
+  html+=`</body></html>`;
+  return html;
+}
+function selectAllPrint(v){ $("print2").checked=v; $("print3").checked=v; $("print4").checked=v; $("print5").checked=v; }
+
+/* ============================= EVENT WIRING & INIT ============================= */
+function clearQuickActive(){
+  ["quickBtns","quickBtns2","quickBtns3","quickBtns4","quickBtns5"].forEach(id=>{
+    const w=$(id); if(!w) return; [...w.children].forEach(c=>c.classList.remove("active"));
+  });
+}
+function syncQuickActive(k){
+  clearQuickActive();
+  ["quickBtns","quickBtns2","quickBtns3","quickBtns4","quickBtns5"].forEach(id=>{
+    const w=$(id); if(!w) return;
+    [...w.children].forEach(c=>{
+      if((c.dataset.range||c.textContent)===k) c.classList.add("active");
+    });
+  });
+}
+$("btnFilter").addEventListener("click",()=>{ clearQuickActive(); applyFilter(); });
+$("btnReset").addEventListener("click",()=>{ if(!allData.length) return; clearQuickActive(); $("startDate").value=allData[0].date; $("endDate").value=allData[allData.length-1].date; applyFilter(); });
+$("btnAll").addEventListener("click",()=>{ TICKERS.forEach(t=>selected[t]=true); renderCurrGrid(); renderAll(); });
+$("btnNone").addEventListener("click",()=>{ Object.keys(selected).forEach(k=>selected[k]=false); renderCurrGrid(); renderAll(); });
+$("searchInput").addEventListener("input",()=>{ const v=$("searchInput").value; $("clearSearch").classList.toggle("show",v.length>0); renderCurrGrid(); });
+$("clearSearch").addEventListener("click",()=>{ $("searchInput").value=""; $("clearSearch").classList.remove("show"); renderCurrGrid(); });
+document.querySelectorAll("#indexModeButtons .index-btn").forEach(b=>{
+  b.addEventListener("click",()=>{ table5Mode=b.dataset.mode||"date"; renderTable5(); });
+});
+$("indexTickerSelect").addEventListener("change",()=>{ table5Ticker=$("indexTickerSelect").value; renderTable5(); });
+
+initChecklist(); renderQuick(); renderCurrGrid(); fetchData();
+</script>
+</body>
+</html>
